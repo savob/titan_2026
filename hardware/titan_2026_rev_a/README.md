@@ -21,9 +21,14 @@ _Unlike the 2022 design, there will likely be no reverse polarity protection as 
 
 ## Sensors
 
-The board hosts several sensors to monitor different things around TITAN. Most sensors are loacted off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors used in the system is:
+The board hosts several sensors to monitor different things around TITAN. Most sensors are loacted off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors interfaced directly with the STM32 in the system is:
 
-- TODO
+- Encoder based wheel speed and distance travelled
+- GPS based speed/distance
+- Battery levels
+- CO2 levels
+- Brake temperatures
+- Ambient temperature and humidity
 
 In this version I am looking to try and integrate more of the sensors onto the board such as GPS, and add new ones like power monitors for boards.
 
