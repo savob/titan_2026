@@ -23,9 +23,9 @@ _Unlike the 2022 design, there will likely be no reverse polarity protection as 
 
 ### Sensors
 
-The board hosts several sensors to monitor different things around TITAN. Several sensors are loacted off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors interfaced directly with the STM32 in the system is:
+The board hosts several sensors to monitor different things around TITAN. Several sensors are located off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors interfaced directly with the STM32 in the system is:
 
-- Encoder based wheel speed and distance travelled
+- Encoder based wheel speed and distance traveled
 - GPS based speed/distance
 - Battery levels
 - CO2 levels
@@ -48,14 +48,16 @@ Although not an critical design constraint, I would like these boards to be able
 
 ## Changes from 2022
 
-There are a multitide changes between the 2022 and 2026 versions of the TITAN board, however my desire is to make them all transparent to the system at large (RPis), and minimize the complexity of firmware rewrites for the STM32. In approximate order of implementation:
+There are a multitude changes between the 2022 and 2026 versions of the TITAN board, however my desire is to make them all transparent to the system at large (RPis), and minimize the complexity of firmware rewrites for the STM32. In approximate order of implementation:
 
-- [ ] Added isolators to be used for inter board UART lines (likely ISO6721)
+- [x] Added isolators to be used for inter board UART lines
 - [ ] Integrated a GPS module
-- [ ] Integrated environmental sensors
-- [ ] Using proper wire to board connectors for everything rather than expecting to solder everything to the PCB
-- [ ] Added sensors to monitor power use of different parts of the system
-- [ ] Changing the main microcontroller to an STM32 with more GPIO than the STM32F103C
-- [ ] Integrated the nRF24L01 radio used for telemetry
-- [ ] Remove reverse polarity input protection
-- [ ] Remove input undervoltage protatection, to accomodate varying S batteries
+- [x] Integrated environmental sensors
+- [x] Using proper wire to board connectors for everything rather than expecting to solder everything to the PCB
+- [x] Added sensors to monitor power use of different parts of the system
+- [x] Changing the main microcontroller to an STM32 with more GPIO than the STM32F103C
+- [ ] Integrated the nRF24L01 radio used for telemetry. _Not doing this since the modules are far cheaper than integration at this scale._
+- [x] Remove reverse polarity input protection
+- [x] Remove input undervoltage protection, to accommodate varying batteries
+- [x] Added on board regulator and power switch to run off USB power if not on an RPi
+
