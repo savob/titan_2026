@@ -2321,6 +2321,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "I^{2}C addess is 0x80 (A1 is LOW) or 0x84 (A1 is HIGH)"
+		(exclude_from_sim no)
+		(at 57.15 106.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "377c38fb-0581-49cc-b4f4-4aa2c617e8e6")
+	)
 	(text "To monitor"
 		(exclude_from_sim no)
 		(at 43.18 31.75 0)
@@ -2427,12 +2437,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3053d040-4312-403a-b0b8-d41f036097d5")
-	)
-	(junction
-		(at 45.72 91.44)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "37179844-e111-4176-9953-6851369f0710")
 	)
 	(junction
 		(at 238.76 53.34)
@@ -2948,6 +2952,16 @@
 	)
 	(wire
 		(pts
+			(xy 41.91 88.9) (xy 45.72 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "604b4402-a43b-4fb1-8222-c29512d48606")
+	)
+	(wire
+		(pts
 			(xy 194.31 72.39) (xy 181.61 72.39)
 		)
 		(stroke
@@ -3175,16 +3189,6 @@
 			(type default)
 		)
 		(uuid "a89f06ce-882c-439f-bb00-6603559c15dd")
-	)
-	(wire
-		(pts
-			(xy 45.72 88.9) (xy 45.72 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aa1108aa-17a6-4643-9c98-fd25f706dcf3")
 	)
 	(wire
 		(pts
@@ -3485,6 +3489,17 @@
 			(justify right bottom)
 		)
 		(uuid "e9c5b312-ee25-49b6-88b8-3d008b58de36")
+	)
+	(hierarchical_label "ADD"
+		(shape input)
+		(at 41.91 88.9 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a8e1ff7b-5de8-4c96-8907-ee7aa86235be")
 	)
 	(hierarchical_label "SCL"
 		(shape input)
