@@ -11,19 +11,19 @@ These HATs perform four main functions:
 3. Collect data from TITAN using the STM32 microcontroller
 4. Handle telemetry broadcast out of TITAN
 
-**Functions 2 to 4 only need to be performed on the "main" (front rider's) unit.** The secondary (rear rider's) will be configured to merely power the RPi and display, but the microcontroller will be bypassed to connect to the primary.
+**Functions 2 to 4 only need to be performed on the "primary" (front rider's) unit.** The secondary (rear rider's) only needs to merely power the RPi and display, and connect to the primary board.
 
 ### Power Regulation
 
-These boards receive power directly from LiFePO4 batteries, historically we have used 3S packs with a nominal voltage of 9.9&nbsp;V, this needs to be regulated down to 5&nbsp;V for the RPi to use, and boosted to 12&nbsp;V for the displays - both regulated on board with switch-mode supplies.
+These boards receive power directly from LiFePO4 batteries which needs to be regulated down to 5&nbsp;V for the RPi to use, and passed to the display.
 
-The main 3.3&nbsp;V rail will be taken from the RPi for board logic. However there will be an linear regulator and power switch to allow for the USB to power the board safly in the absence of an RPi.
+The main 3.3&nbsp;V rail for logic will be taken from the RPi for board logic. However there will be an linear regulator and power switch to allow for the USB to power the board safely in the absence of an RPi.
 
-_Unlike the 2022 design, there will likely be no reverse polarity protection as the battery connector should be good enough. Undervoltage protection may also be removed._
+Historically we used 3S packs with a nominal voltage of 9.9&nbsp;V which when really discharged would lead to some screens dimming their backlights, although never fully turning off. So for 2026 I am considering going up to 4S to prevent this happening.
 
 ### Sensors
 
-The board hosts several sensors to monitor different things around TITAN. Several sensors are located off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors interfaced directly with the STM32 in the system is:
+The board hosts several sensors to monitor different things around TITAN. Some sensors are located off board to be better positioned to capture their data such as the wheel sensors. A summary of the sensors interfaced directly with the STM32 in the system is:
 
 - Encoder based wheel speed and distance traveled
 - GPS based speed/distance
@@ -36,11 +36,11 @@ The board hosts several sensors to monitor different things around TITAN. Severa
 
 The STM32 acts a server essentially for data, serving and accepting data from the different system endpoints. Communication with the two RPis is done via UART, and out of TITAN using nRF24 radios.
 
-Also in the previous version of TITAN the nRF24 radio was soldered as an off the shelf module, for this board they're being considered for proper integration.
-
 ### Configuration
 
-All board will be assembled identically, so setting a board for operation in a "primary" or "secondary" role will likely be done using solder bridges on designated jumpers.
+All boards will be assembled identically, so setting a board for operation in a "primary" or "secondary" role will be needed.
+
+This is partly achieved through hardware design with the `ROLE` signal, but some solder jumpers are needed to portion off the I2C bus on the secondary board to avoid address collisions when connected.
 
 ### Standalone Operation
 
@@ -50,14 +50,15 @@ Although not an critical design constraint, I would like these boards to be able
 
 There are a multitude changes between the 2022 and 2026 versions of the TITAN board, however my desire is to make them all transparent to the system at large (RPis), and minimize the complexity of firmware rewrites for the STM32. In approximate order of implementation:
 
-- [x] Added isolators to be used for inter board UART lines
-- [ ] Integrated a GPS module
-- [x] Integrated environmental sensors
-- [x] Using proper wire to board connectors for everything rather than expecting to solder everything to the PCB
-- [x] Added sensors to monitor power use of different parts of the system
-- [x] Changing the main microcontroller to an STM32 with more GPIO than the STM32F103C
-- [ ] Integrated the nRF24L01 radio used for telemetry. _Not doing this since the modules are far cheaper than integration at this scale._
-- [x] Remove reverse polarity input protection
-- [x] Remove input undervoltage protection, to accommodate varying batteries
-- [x] Added on board regulator and power switch to run off USB power if not on an RPi
+- Added isolators to be used for inter board UART lines
+- Integrated a GPS module
+- Integrated environmental sensors
+- Using proper wire to board connectors for everything rather than expecting to soldering some wires to the PCB
+- Added sensors to monitor power use of different parts of the system
+- Changed the main microcontroller to an STM32 with more GPIO (STM32F105R)
+- Removed reverse polarity input protection for simplicity
+- Removed input undervoltage protection, to accommodate varying batteries
+- Added on board regulator and power switch ICs to run off USB power if not mounted on an RPi ("standalone")
+- Board "role" is determined in hardware based on the connection between the primary and secondary
 
+These cover all the changes I felt were really needed on TITAN. There was only one change that I would like but couldn't justify: integrating the nRF24L01+LNA radio used for telemetry. It would needlessly take me more time to draw the schematic, spec the parts, and then layout while not meaningfully improving any performance metric while greatly increasing the cost compared to just getting a handful of the preassembled modules online. _I'll put aside the vain desire for a majestic monolithic PCB, for now._

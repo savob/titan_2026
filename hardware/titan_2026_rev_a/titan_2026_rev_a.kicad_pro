@@ -300,7 +300,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "pin_to_pin|1193800|431800|b818d082-5034-4068-ad77-2a1062833089|073092ad-6b70-4aa5-9f16-d79da0a3d7e4|/a202737f-3bef-4789-86fe-0d52089f6e3f/dda8d42d-db1e-426b-9c4f-358b44bfd9ef|/a202737f-3bef-4789-86fe-0d52089f6e3f/dda8d42d-db1e-426b-9c4f-358b44bfd9ef|/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -763,7 +768,7 @@
       "model_mode": 0,
       "workbook_filename": ""
     },
-    "page_layout_descr_file": "/home/savo/Documents/KiCAD Circuits/small_title_block.kicad_wks",
+    "page_layout_descr_file": "",
     "plot_directory": "",
     "reuse_designators": true,
     "spice_adjust_passive_values": false,
@@ -777,7 +782,7 @@
         "uuid": "a202737f-3bef-4789-86fe-0d52089f6e3f"
       }
     ],
-    "used_designators": "",
+    "used_designators": "C20-21,U4,R23-24,J7-8,#PWR32-33,#PWR36-37,#PWR44,#PWR67,#FLG7",
     "variants": []
   },
   "sheets": [
@@ -792,6 +797,14 @@
     [
       "f74fe6b5-1b76-44d3-9004-8e32fb78c34b",
       "Radio Systems"
+    ],
+    [
+      "dda8d42d-db1e-426b-9c4f-358b44bfd9ef",
+      "Sensors"
+    ],
+    [
+      "7ab00678-4cc7-46e5-aa8d-7c6ef8f1b87c",
+      "Interboard Comms"
     ]
   ],
   "text_variables": {},
