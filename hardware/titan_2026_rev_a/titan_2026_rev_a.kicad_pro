@@ -782,7 +782,7 @@
         "uuid": "a202737f-3bef-4789-86fe-0d52089f6e3f"
       }
     ],
-    "used_designators": "C20-21,U4,R23-24,J7-8,#PWR32-33,#PWR36-37,#PWR44,#PWR67,#FLG7",
+    "used_designators": "JP3,#PWR40,#PWR68",
     "variants": []
   },
   "sheets": [

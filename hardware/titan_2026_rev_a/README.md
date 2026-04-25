@@ -42,6 +42,8 @@ All boards will be assembled identically, so setting a board for operation in a 
 
 This is partly achieved through hardware design with the `ROLE` signal, but some solder jumpers are needed to portion off the I2C bus on the secondary board to avoid address collisions when connected.
 
+Depending on the displays used there is a solder jumper to provide them with power from either the 5&nbsp;V rail or directly from the battery.
+
 ### Standalone Operation
 
 Although not an critical design constraint, I would like these boards to be able to operate on their own for testing and even use as downlink boards for the crew outside TITAN. So I have incorporated a USB-C connection and some power switches to safely connect to the USB under any configuration of the board.
@@ -60,5 +62,6 @@ There are a multitude changes between the 2022 and 2026 versions of the TITAN bo
 - Removed input undervoltage protection, to accommodate varying batteries
 - Added on board regulator and power switch ICs to run off USB power if not mounted on an RPi ("standalone")
 - Board "role" is determined in hardware based on the connection between the primary and secondary
+- Added jumper to select power output to the display connector
 
 These cover all the changes I felt were really needed on TITAN. There was only one change that I would like but couldn't justify: integrating the nRF24L01+LNA radio used for telemetry. It would needlessly take me more time to draw the schematic, spec the parts, and then layout while not meaningfully improving any performance metric while greatly increasing the cost compared to just getting a handful of the preassembled modules online. _I'll put aside the vain desire for a majestic monolithic PCB, for now._
