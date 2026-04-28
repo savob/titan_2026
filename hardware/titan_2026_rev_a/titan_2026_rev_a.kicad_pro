@@ -13,7 +13,7 @@
         "copper_text_italic": false,
         "copper_text_size_h": 1.0,
         "copper_text_size_v": 1.0,
-        "copper_text_thickness": 0.3,
+        "copper_text_thickness": 0.25,
         "copper_text_upright": false,
         "courtyard_line_width": 0.05,
         "dimension_precision": 4,
@@ -61,32 +61,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        [
-          "silk_over_copper|123150000|106325000|67866dd0-357b-4cad-a8e1-152ff5fec602|5fdb83be-bb3e-44d6-874f-56234c20f231",
-          ""
-        ],
-        [
-          "silk_over_copper|131850000|106325000|67866dd0-357b-4cad-a8e1-152ff5fec602|cf9ede1a-d241-4681-832b-748b9dcea447",
-          ""
-        ],
-        [
-          "silk_over_copper|154750000|57600000|b827217e-2093-4998-ba24-1e7206d94cb9|3a5126db-958f-4248-83d8-c807f9c9d4fb",
-          ""
-        ],
-        [
-          "silk_over_copper|154750000|73050000|b827217e-2093-4998-ba24-1e7206d94cb9|a6fa8848-4e9a-4036-a361-c72261fcb04a",
-          ""
-        ],
-        [
-          "silk_over_copper|154750000|73785000|b827217e-2093-4998-ba24-1e7206d94cb9|16f06f43-e9f3-4608-a64b-c52581a0c9f6",
-          ""
-        ],
-        [
-          "silk_over_copper|154750000|99185000|b827217e-2093-4998-ba24-1e7206d94cb9|bfc0036b-6fd6-4c30-becf-23e565a2d0ab",
-          ""
-        ]
-      ],
+      "drc_exclusions": [],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -162,7 +137,7 @@
         "allow_microvias": false,
         "max_error": 0.005,
         "min_clearance": 0.15,
-        "min_connection": 0.0,
+        "min_connection": 0.15,
         "min_copper_edge_clearance": 0.2,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.25,
@@ -174,7 +149,7 @@
         "min_text_height": 0.8,
         "min_text_thickness": 0.08,
         "min_through_hole_diameter": 0.3,
-        "min_track_width": 0.2,
+        "min_track_width": 0.15,
         "min_via_annular_width": 0.05,
         "min_via_diameter": 0.4,
         "solder_mask_to_copper_clearance": 0.0,
@@ -270,7 +245,7 @@
           "drill": 0.4
         }
       ],
-      "zones_allow_external_fillets": false,
+      "zones_allow_external_fillets": true,
       "zones_use_no_outline": true
     },
     "ipc2581": {
@@ -546,7 +521,7 @@
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.2,
+        "clearance": 0.15,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -557,10 +532,10 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2147483647,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.2,
+        "track_width": 0.15,
         "tuning_profile": "",
-        "via_diameter": 0.9,
-        "via_drill": 0.6,
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
         "wire_width": 6
       },
       {
@@ -782,7 +757,7 @@
         "uuid": "a202737f-3bef-4789-86fe-0d52089f6e3f"
       }
     ],
-    "used_designators": "",
+    "used_designators": "JP4,#PWR69,C22-23",
     "variants": []
   },
   "sheets": [
