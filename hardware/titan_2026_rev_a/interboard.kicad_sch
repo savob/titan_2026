@@ -1717,6 +1717,12 @@
 		(uuid "272b0cbc-d667-496f-8ddc-34332dd71abf")
 	)
 	(junction
+		(at 93.98 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4b37641d-6e64-4ca2-9598-d9da50226b62")
+	)
+	(junction
 		(at 91.44 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2172,7 +2178,7 @@
 	)
 	(wire
 		(pts
-			(xy 91.44 106.68) (xy 96.52 106.68)
+			(xy 91.44 106.68) (xy 93.98 106.68)
 		)
 		(stroke
 			(width 0)
@@ -2259,6 +2265,16 @@
 			(type default)
 		)
 		(uuid "f60cd35e-fc5e-41c1-974f-1c53e30f32d6")
+	)
+	(wire
+		(pts
+			(xy 93.98 106.68) (xy 96.52 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f6b9527f-fa8a-4f73-9d8d-f323dc744807")
 	)
 	(wire
 		(pts
@@ -3700,6 +3716,85 @@
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/7ab00678-4cc7-46e5-aa8d-7c6ef8f1b87c"
 					(reference "#PWR044")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 93.98 106.68 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bbf9566e-f0bb-47e8-a6b5-a18add964eb7")
+		(property "Reference" "#FLG08"
+			(at 93.98 104.775 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 93.98 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 93.98 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 93.98 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 93.98 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "341326a9-0bd3-4ff1-8231-0450c69e9e62")
+		)
+		(instances
+			(project "titan_2026_rev_a"
+				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/7ab00678-4cc7-46e5-aa8d-7c6ef8f1b87c"
+					(reference "#FLG08")
 					(unit 1)
 				)
 			)
