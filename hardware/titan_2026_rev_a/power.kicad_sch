@@ -2721,6 +2721,12 @@
 		(uuid "1f9c6c90-c169-47e8-b8fb-9d98742231e1")
 	)
 	(junction
+		(at 58.42 68.58)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "22bc23d0-a9db-4634-8a91-bb80b87b2637")
+	)
+	(junction
 		(at 83.82 53.34)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2922,6 +2928,16 @@
 	)
 	(wire
 		(pts
+			(xy 46.99 68.58) (xy 46.99 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "02f5eddb-7936-4399-9db8-042d9d6555e4")
+	)
+	(wire
+		(pts
 			(xy 46.99 53.34) (xy 71.12 53.34)
 		)
 		(stroke
@@ -2989,6 +3005,16 @@
 			(type default)
 		)
 		(uuid "123eba38-634b-4cef-b634-50ee83d98ae3")
+	)
+	(wire
+		(pts
+			(xy 58.42 76.2) (xy 58.42 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "141f14c3-b389-41a6-b15c-948861e4279b")
 	)
 	(wire
 		(pts
@@ -3099,6 +3125,26 @@
 			(type default)
 		)
 		(uuid "3712a969-c4cb-45bd-b60a-24ee8367fa7f")
+	)
+	(wire
+		(pts
+			(xy 58.42 66.04) (xy 58.42 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "37d83f15-9997-4d91-af95-2f9545562d16")
+	)
+	(wire
+		(pts
+			(xy 46.99 68.58) (xy 58.42 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38ba1fee-bcde-4527-b0af-7595787795ca")
 	)
 	(wire
 		(pts
@@ -4035,121 +4081,6 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 69.85 137.16 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "037828b1-cff0-4320-b3d1-4d576cc079a6")
-		(property "Reference" "C10"
-			(at 66.04 135.8899 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 66.04 138.4299 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 68.8848 140.97 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 69.85 137.16 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 69.85 137.16 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C5360828"
-			(at 69.85 137.16 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 69.85 137.16 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Type" ""
-			(at 69.85 137.16 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "19fda65f-bdf4-40a1-bdb0-435ff3fdce9d")
-		)
-		(pin "2"
-			(uuid "48d88c2a-1b50-4141-999b-2343a533501c")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
-					(reference "C10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
 		(at 185.42 63.5 0)
 		(unit 1)
 		(body_style 1)
@@ -4961,6 +4892,84 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 58.42 77.47 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "40e760d4-8580-43fd-9fd5-5bdcb3849ca7")
+		(property "Reference" "#PWR069"
+			(at 58.42 83.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 58.42 81.28 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 58.42 77.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 58.42 77.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 58.42 77.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d2febb23-3b38-48b0-8468-5b82ce125670")
+		)
+		(instances
+			(project "titan_2026_rev_a"
+				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
+					(reference "#PWR069")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 46.99 53.34 0)
 		(unit 1)
@@ -5234,7 +5243,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 46.99 76.2 0)
+		(at 58.42 66.04 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -5246,7 +5255,7 @@
 		(fields_autoplaced yes)
 		(uuid "5e480a8a-2c28-41c2-8f28-e18b9f2d87ab")
 		(property "Reference" "#PWR043"
-			(at 46.99 80.01 0)
+			(at 58.42 69.85 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5257,7 +5266,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 46.99 71.12 0)
+			(at 58.42 60.96 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5267,7 +5276,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 46.99 76.2 0)
+			(at 58.42 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5278,7 +5287,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 46.99 76.2 0)
+			(at 58.42 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5289,7 +5298,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 46.99 76.2 0)
+			(at 58.42 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6282,6 +6291,119 @@
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
 					(reference "U6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 58.42 72.39 0)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "8c77e606-638b-44ef-aae4-55ab9046f752")
+		(property "Reference" "C22"
+			(at 64.77 72.39 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 62.23 72.39 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 59.3852 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 58.42 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 58.42 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C301928"
+			(at 58.42 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 58.42 72.39 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Type" ""
+			(at 58.42 72.39 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "93de37a9-ec50-495c-b4bd-587cc1768ffd")
+		)
+		(pin "2"
+			(uuid "282177e4-8ae8-43ca-948b-1f66a9a3db28")
+		)
+		(instances
+			(project "titan_2026_rev_a"
+				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
+					(reference "C22")
 					(unit 1)
 				)
 			)
@@ -8498,6 +8620,120 @@
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
 					(reference "C14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 69.85 137.16 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f6121f30-fae2-4037-bf38-f52428e3a6fe")
+		(property "Reference" "C23"
+			(at 66.04 135.8899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100n"
+			(at 66.04 138.4299 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 70.8152 140.97 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 69.85 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 69.85 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C301928"
+			(at 69.85 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 69.85 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Type" ""
+			(at 69.85 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "de3cf2e1-f919-4ce0-be28-e558fa6d805e")
+		)
+		(pin "2"
+			(uuid "c6c357f8-2581-452b-8038-992671a62f02")
+		)
+		(instances
+			(project "titan_2026_rev_a"
+				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f/74870a03-2184-4891-bfaf-39a1d14f7700"
+					(reference "C23")
 					(unit 1)
 				)
 			)
