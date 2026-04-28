@@ -5591,18 +5591,6 @@
 		)
 		(uuid "b4ead5d7-6dd7-4811-8454-ffa25b536240")
 	)
-	(text "Used for safe\nshutdown script"
-		(exclude_from_sim no)
-		(at 17.78 111.76 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(italic yes)
-			)
-			(justify left bottom)
-		)
-		(uuid "e8fe09a9-c519-4d95-8cf7-4b2676301dcc")
-	)
 	(text "RPi Header"
 		(exclude_from_sim no)
 		(at 17.78 36.83 0)
@@ -5842,6 +5830,10 @@
 	(no_connect
 		(at 168.91 78.74)
 		(uuid "3bd4579c-0b17-4676-95bf-e0bbbe4a608a")
+	)
+	(no_connect
+		(at 30.48 87.63)
+		(uuid "3d7203ac-4c8d-4113-b4f3-d62d9553c021")
 	)
 	(no_connect
 		(at 71.12 49.53)
@@ -6307,16 +6299,6 @@
 	)
 	(wire
 		(pts
-			(xy 19.05 99.06) (xy 19.05 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "323d755e-8752-4875-9b6b-3e440160025f")
-	)
-	(wire
-		(pts
 			(xy 228.6 111.76) (xy 237.49 111.76)
 		)
 		(stroke
@@ -6504,16 +6486,6 @@
 			(type default)
 		)
 		(uuid "464c4132-1c86-4534-a2fb-64320526e5ee")
-	)
-	(wire
-		(pts
-			(xy 19.05 87.63) (xy 30.48 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4735938c-38f9-489c-b8f3-33157454c63e")
 	)
 	(wire
 		(pts
@@ -6834,16 +6806,6 @@
 			(type default)
 		)
 		(uuid "7a74905e-b850-499e-9230-8731ca1d33b3")
-	)
-	(wire
-		(pts
-			(xy 19.05 88.9) (xy 19.05 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7d086056-9b66-47af-8c68-ceb222073c5d")
 	)
 	(wire
 		(pts
@@ -7585,16 +7547,6 @@
 		)
 		(uuid "10515f8e-93c7-4e04-9954-af92d23f1131")
 	)
-	(label "RPI_ON"
-		(at 19.05 87.63 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "12a642fa-0a71-41ed-9325-c346e7cad65c")
-	)
 	(label "SCL_{WHL}"
 		(at 180.34 99.06 180)
 		(effects
@@ -7745,16 +7697,6 @@
 		)
 		(uuid "36952a48-a0d1-4f1a-979a-5d85177a65ad")
 	)
-	(label "RPI_OFF"
-		(at 81.28 59.69 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "379aefc1-6975-47e0-97b7-5a828cf8308c")
-	)
 	(label "SCL"
 		(at 77.47 154.94 90)
 		(effects
@@ -7874,6 +7816,16 @@
 			(justify right bottom)
 		)
 		(uuid "675d9d4e-6baa-499b-9691-e0ba325860d7")
+	)
+	(label "RPI_SW"
+		(at 81.28 59.69 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "689e51d4-7de3-40fe-b631-fc1ee7f168fc")
 	)
 	(label "RF_{INT}"
 		(at 123.19 68.58 0)
@@ -9757,7 +9709,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "31017f7f-c94f-4399-a812-08e10a9429bc")
-		(property "Reference" "SW2"
+		(property "Reference" "SW1"
 			(at 82.55 66.0399 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9877,7 +9829,7 @@
 		(instances
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "SW2")
+					(reference "SW1")
 					(unit 1)
 				)
 			)
@@ -12136,145 +12088,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Switch:SW_SPST")
-		(at 19.05 93.98 90)
-		(mirror x)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8f9952ce-db62-4350-b05e-d0efc8047805")
-		(property "Reference" "SW1"
-			(at 21.59 93.9799 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "SW_SPST"
-			(at 16.51 95.2499 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "titan:SW_SPST_SKPM"
-			(at 19.05 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 19.05 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Single Pole Single Throw (SPST) switch"
-			(at 19.05 93.98 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C110292"
-			(at 19.05 93.98 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer" "ALPSALPINE"
-			(at 19.05 93.98 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Manufacturer Part" "SKPMAPE010"
-			(at 19.05 93.98 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 19.05 93.98 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Type" ""
-			(at 19.05 93.98 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "cfed12d1-a68f-4b12-a8ee-118520bb5dc7")
-		)
-		(pin "2"
-			(uuid "a4820daa-0ab0-48e5-85ed-382e6af22a2d")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "SW1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:LED")
 		(at 201.93 153.67 270)
 		(mirror x)
@@ -13685,83 +13498,6 @@
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
 					(reference "D3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 19.05 100.33 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "dbd67372-3f69-41a3-a7c5-8144b9dbd5fe")
-		(property "Reference" "#PWR01"
-			(at 19.05 106.68 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 19.05 104.14 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 19.05 100.33 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 19.05 100.33 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 19.05 100.33 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "6809766e-1b66-44cf-96c7-e77ed484b93a")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "#PWR01")
 					(unit 1)
 				)
 			)
