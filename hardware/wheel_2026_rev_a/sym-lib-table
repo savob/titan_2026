@@ -1,4 +1,4 @@
 (sym_lib_table
 	(version 7)
-	(lib (name "wheel_sensors") (type "KiCad") (uri "${KIPRJMOD}/wheel_sensors.kicad_sym") (options "") (descr ""))
+	(lib (name "TITAN") (type "KiCad") (uri "${KIPRJMOD}/../titan_symbols") (options "") (descr ""))
 )
