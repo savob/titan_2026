@@ -5722,12 +5722,6 @@
 		(uuid "b1621d28-53cc-40be-8709-258e7c1b1ad8")
 	)
 	(junction
-		(at 189.23 87.63)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b4485b98-dad6-418c-9f03-ac7dbba61ab7")
-	)
-	(junction
 		(at 250.19 69.85)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6006,26 +6000,6 @@
 			(type default)
 		)
 		(uuid "0288ce29-48b8-4cc0-aa5f-fb038db42e3d")
-	)
-	(wire
-		(pts
-			(xy 189.23 87.63) (xy 190.5 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "04d37548-a6f7-4b7f-9651-c815af4271c5")
-	)
-	(wire
-		(pts
-			(xy 168.91 101.6) (xy 190.5 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0626a786-2950-4ef9-8c56-70f1db1f816b")
 	)
 	(wire
 		(pts
@@ -6599,16 +6573,6 @@
 	)
 	(wire
 		(pts
-			(xy 189.23 87.63) (xy 187.96 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5ba99e8c-4144-444f-bc74-b412f22d7f0c")
-	)
-	(wire
-		(pts
 			(xy 63.5 185.42) (xy 52.07 185.42)
 		)
 		(stroke
@@ -6899,16 +6863,6 @@
 	)
 	(wire
 		(pts
-			(xy 187.96 95.25) (xy 187.96 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8706aad2-041d-4035-954b-37991b4cae99")
-	)
-	(wire
-		(pts
 			(xy 146.05 17.78) (xy 154.94 17.78)
 		)
 		(stroke
@@ -7169,16 +7123,6 @@
 	)
 	(wire
 		(pts
-			(xy 168.91 99.06) (xy 187.96 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d2f3b4ce-982b-4130-b964-97c6c693c45a")
-	)
-	(wire
-		(pts
 			(xy 63.5 180.34) (xy 52.07 180.34)
 		)
 		(stroke
@@ -7249,16 +7193,6 @@
 	)
 	(wire
 		(pts
-			(xy 190.5 95.25) (xy 190.5 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e36399a7-a7ef-4e9f-ad35-da6c2464151d")
-	)
-	(wire
-		(pts
 			(xy 92.71 138.43) (xy 88.9 138.43)
 		)
 		(stroke
@@ -7276,6 +7210,16 @@
 			(type default)
 		)
 		(uuid "e3d85580-eaf2-4882-8cfb-d0c45e305ed5")
+	)
+	(wire
+		(pts
+			(xy 168.91 101.6) (xy 180.34 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e4021e0b-ccd3-4df3-a368-0530b5d838c7")
 	)
 	(wire
 		(pts
@@ -7446,6 +7390,16 @@
 			(type default)
 		)
 		(uuid "f46e8312-fd3b-4bd3-bca4-e280be43bfd6")
+	)
+	(wire
+		(pts
+			(xy 168.91 99.06) (xy 180.34 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f5c3903b-eec7-45a4-9e61-3107c63a0e25")
 	)
 	(wire
 		(pts
@@ -10243,81 +10197,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 189.23 87.63 0)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3739ebc5-ae70-44c2-b2c3-a64cbe1c32e1")
-		(property "Reference" "#PWR028"
-			(at 189.23 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+5V"
-			(at 189.23 84.074 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 189.23 87.63 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 189.23 87.63 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 189.23 87.63 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "1f990476-b6b4-4d91-b09b-428f6731f476")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "#PWR028")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Power_Protection:USBLC6-2SC6")
 		(at 213.36 45.72 0)
 		(mirror y)
@@ -11042,119 +10921,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 187.96 91.44 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "5cb63fc9-7fc0-4614-9fd0-9391925886c0")
-		(property "Reference" "R6"
-			(at 185.42 90.1699 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "2k"
-			(at 185.42 92.7099 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 188.976 91.694 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 187.96 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 187.96 91.44 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 187.96 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Type" ""
-			(at 187.96 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C4109"
-			(at 187.96 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c4845a20-f35e-45d3-befe-a332e813e642")
-		)
-		(pin "2"
-			(uuid "a0b5a59e-050c-46b0-a0a2-0f2c10186fcb")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "R6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "MCU_ST_STM32F1:STM32F105RCTx")
 		(at 151.13 76.2 0)
 		(unit 1)
@@ -11578,120 +11344,6 @@
 			(project "titan_2026_rev_a"
 				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
 					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 190.5 91.44 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "6bb57e55-870d-4b2b-a60e-0ddaffa5d3a5")
-		(property "Reference" "R7"
-			(at 193.04 90.1699 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2k"
-			(at 193.04 92.7099 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 191.516 91.694 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 190.5 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 190.5 91.44 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 190.5 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Sim.Type" ""
-			(at 190.5 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C4109"
-			(at 190.5 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "254b98a8-64c1-4579-a726-0e67d322fb81")
-		)
-		(pin "2"
-			(uuid "65b9900d-2ae1-40f6-ab53-ff42b3787a9d")
-		)
-		(instances
-			(project "titan_2026_rev_a"
-				(path "/a202737f-3bef-4789-86fe-0d52089f6e3f"
-					(reference "R7")
 					(unit 1)
 				)
 			)
