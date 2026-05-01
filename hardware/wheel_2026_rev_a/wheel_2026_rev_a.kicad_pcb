@@ -105,7 +105,6 @@
 		)
 		(capping no)
 		(filling no)
-		(zone_defaults)
 		(pcbplotparams
 			(layerselection 0x00000000_00000000_55555555_5755f5ff)
 			(plot_on_all_layers_selection 0x00000000_00000000_00000000_00000000)
@@ -276,6 +275,12 @@
 		(path "/4343a040-fc1c-4f95-bb78-05d98ab90194")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -336,7 +341,7 @@
 			(size 0.8 0.95)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net "+5V")
+			(net "VBUS")
 			(pintype "passive")
 			(uuid "e97d7949-110e-4a7a-bdf2-5d895d45e85a")
 		)
@@ -486,6 +491,12 @@
 		(path "/d3a1a8b1-b49a-428c-ad18-713c8ae2212c")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
 			(center 0 0)
@@ -663,6 +674,20 @@
 		(path "/6d723ecb-e442-451b-bff1-e216cef5aa3a")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "3" "2" "1")
+			)
+			(unit
+				(name "B")
+				(pins "5" "6" "7")
+			)
+			(unit
+				(name "C")
+				(pins "8" "4")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -953,7 +978,7 @@
 			(size 1.95 0.6)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net "+5V")
+			(net "VBUS")
 			(pinfunction "V+_8")
 			(pintype "power_in")
 			(uuid "57c02b16-79db-4794-a395-e33d3a107396")
@@ -1142,6 +1167,12 @@
 		(path "/81b23506-4938-40ea-9da0-bed99b8335c4")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "3" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1283,7 +1314,7 @@
 			(size 1.3 2)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.192308)
-			(net "+5V")
+			(net "VBUS")
 			(pinfunction "1_1")
 			(pintype "passive")
 			(uuid "2f38857f-0aff-4368-8a75-a70bfc9aa3c4")
@@ -1453,6 +1484,12 @@
 		(path "/4c9610a4-9db7-4537-ad8b-6b10542a3c4d")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2" "3" "4" "5")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1591,7 +1628,7 @@
 			(at 0 0 270)
 			(size 1.7 1.7)
 			(layers "F.Cu" "F.Mask")
-			(net "+5V")
+			(net "VBUS")
 			(pinfunction "Pin_1_1")
 			(pintype "passive")
 			(uuid "a0fa09c1-273a-4358-b81b-ca607ceb079f")
@@ -1870,6 +1907,12 @@
 		(path "/3fd16659-10b8-4d66-b7e3-d7ad6b1d0699")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
 			(center 0 0)
@@ -2047,6 +2090,12 @@
 		(path "/e16db058-fa43-40bf-9cff-c2ed4fab6ab5")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2107,7 +2156,7 @@
 			(size 0.9 0.95)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net "+5V")
+			(net "VBUS")
 			(pintype "passive")
 			(uuid "1c7ec62e-d96c-4a0d-ac32-e919b90a3c5b")
 		)
@@ -2304,6 +2353,12 @@
 		(path "/1bf593f7-afc6-40b2-8f69-f4d891f21455")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "3" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2724,6 +2779,12 @@
 		(path "/a14837d8-4238-4d95-81d5-30411d47ab52")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2793,7 +2854,7 @@
 			(size 0.8 0.95)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net "+5V")
+			(net "VBUS")
 			(pintype "passive")
 			(uuid "d69c7e9c-ae40-4f01-990e-d9e05ff0e11f")
 		)
@@ -2943,6 +3004,12 @@
 		(path "/814fd6cb-1f7d-4f2c-89fb-decc9c9a5494")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3204,6 +3271,12 @@
 		(path "/c5c9ccc5-5f8a-4bea-8644-bed0e23cec1f")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
 			(center 0 0)
@@ -3373,6 +3446,12 @@
 		(path "/55b84cb4-395b-4252-a790-b9f0dcd0732e")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
 			(center 0 0)
@@ -3550,6 +3629,12 @@
 		(path "/94284773-b8b0-4f72-ab2c-77c59f651bda")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3619,7 +3704,7 @@
 			(size 0.8 0.95)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
-			(net "+5V")
+			(net "VBUS")
 			(pintype "passive")
 			(uuid "dcf3bbd9-1d09-4ecd-b12a-5dcf3491d276")
 		)
@@ -3655,7 +3740,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "MLX90614xSF-AxA-000-TU"
+		(property "Value" "MLX90614ESF-BAA"
 			(at 2.54 -5.82 0)
 			(layer "B.Fab")
 			(uuid "18635006-bf10-4997-9b71-1b8f8444ac66")
@@ -3759,9 +3844,29 @@
 				(justify mirror)
 			)
 		)
+		(property "LCSC" "C490604"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "34886068-3cc3-45df-a86f-2e47a219bf90")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
 		(path "/0322ba5a-a8a1-4a5c-9f82-b2fa36e7be88")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2" "3" "4")
+			)
+		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4099,7 +4204,7 @@
 			(drill 0.7)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(net "+5V")
+			(net "VBUS")
 			(pinfunction "V_{DD}_3")
 			(pintype "power_in")
 			(uuid "fd4c09da-8f3b-4a96-b439-9c363b8fe7e6")
@@ -4157,7 +4262,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.vishay.com/docs/83760/tcrt5000.pdf"
 			(at 0 0 90)
 			(layer "B.Fab")
 			(hide yes)
@@ -4251,6 +4356,12 @@
 		(path "/3c639683-ca3e-453a-8d5a-66e3fc0e5fb7")
 		(sheetname "/")
 		(sheetfile "wheel_2026_rev_a.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2" "4" "3")
+			)
+		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4610,6 +4721,18 @@
 			(justify left bottom)
 		)
 	)
+	(gr_text "3.3V, although 5V worked before"
+		(at 133.75 58.25 0)
+		(layer "F.SilkS")
+		(uuid "c666e648-015e-4b72-a63c-ecc6ff1c06e6")
+		(effects
+			(font
+				(size 1 1)
+				(italic yes)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "GND"
 		(at 132.75 45.75 45)
 		(layer "F.SilkS")
@@ -4709,7 +4832,7 @@
 			(justify left)
 		)
 	)
-	(gr_text "5V"
+	(gr_text "PWR"
 		(at 132.5 54.75 90)
 		(layer "F.SilkS")
 		(uuid "fe58bc2f-17c5-4506-8ae5-40948e618273")
@@ -6666,128 +6789,6 @@
 		)
 	)
 	(segment
-		(start 143.225 47.5)
-		(end 141.75 47.5)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "31d6b2a2-6ebb-4c9f-b4c2-d7e62e00eb92")
-	)
-	(segment
-		(start 165.575 54.75)
-		(end 165.575 56.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "3bc3dbca-3aa5-41ff-ba60-3c85bca2794a")
-	)
-	(segment
-		(start 166.25 52.25)
-		(end 165.575 52.925)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "62c7a4ef-5ca1-46e3-b313-bb24fd97847e")
-	)
-	(segment
-		(start 145.75 52.85)
-		(end 145.75 51.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "715f8811-0513-408a-ba04-a3c1d11823db")
-	)
-	(segment
-		(start 141.75 47.5)
-		(end 141.5 47.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "754d9465-d797-47d9-ae71-3a1facb11690")
-	)
-	(segment
-		(start 165.575 52.925)
-		(end 165.575 53.25)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "86bf3e90-468b-4a14-b232-37099a088b4a")
-	)
-	(segment
-		(start 132.575 56.5)
-		(end 134.25 56.5)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "a9f76f76-37a2-41a4-9b0f-5dd609aaf145")
-	)
-	(segment
-		(start 141.5 47.25)
-		(end 141.5 45.68)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "b2cbe80f-e41a-47de-8b0d-aeb61e7a8887")
-	)
-	(segment
-		(start 141.5 45.68)
-		(end 141.525 45.655)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "c2762736-ecaf-4100-80f0-8a48a9a27e8a")
-	)
-	(segment
-		(start 165.575 53.25)
-		(end 165.575 54.75)
-		(width 0.25)
-		(layer "F.Cu")
-		(net "+5V")
-		(uuid "e6520223-1736-4b00-97a0-f4073a8a4c06")
-	)
-	(via
-		(at 134.25 56.5)
-		(size 0.8)
-		(drill 0.4)
-		(layers "F.Cu" "B.Cu")
-		(net "+5V")
-		(uuid "35664c48-6872-4a97-9ead-294e5fcc6ae8")
-	)
-	(via
-		(at 145.75 51.25)
-		(size 0.8)
-		(drill 0.4)
-		(layers "F.Cu" "B.Cu")
-		(net "+5V")
-		(uuid "5f7f3004-3752-436b-9a2a-88d58070b650")
-	)
-	(via
-		(at 166.25 52.25)
-		(size 0.8)
-		(drill 0.4)
-		(layers "F.Cu" "B.Cu")
-		(net "+5V")
-		(uuid "c97e4804-c76a-43ca-8150-ad2bdabe7239")
-	)
-	(via
-		(at 141.5 47.25)
-		(size 0.8)
-		(drill 0.4)
-		(layers "F.Cu" "B.Cu")
-		(capping no)
-		(covering
-			(front no)
-			(back no)
-		)
-		(plugging
-			(front no)
-			(back no)
-		)
-		(filling no)
-		(net "+5V")
-		(uuid "e6f7b6bb-e3ac-4fda-9477-f92398fc552a")
-	)
-	(segment
 		(start 163.925 52.075)
 		(end 166 50)
 		(width 0.25)
@@ -7304,6 +7305,128 @@
 		(layer "F.Cu")
 		(net "Net-(D1-A)")
 		(uuid "c0e896a5-a446-42e2-86fe-344207a62789")
+	)
+	(segment
+		(start 143.225 47.5)
+		(end 141.75 47.5)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "31d6b2a2-6ebb-4c9f-b4c2-d7e62e00eb92")
+	)
+	(segment
+		(start 165.575 54.75)
+		(end 165.575 56.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "3bc3dbca-3aa5-41ff-ba60-3c85bca2794a")
+	)
+	(segment
+		(start 166.25 52.25)
+		(end 165.575 52.925)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "62c7a4ef-5ca1-46e3-b313-bb24fd97847e")
+	)
+	(segment
+		(start 145.75 52.85)
+		(end 145.75 51.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "715f8811-0513-408a-ba04-a3c1d11823db")
+	)
+	(segment
+		(start 141.75 47.5)
+		(end 141.5 47.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "754d9465-d797-47d9-ae71-3a1facb11690")
+	)
+	(segment
+		(start 165.575 52.925)
+		(end 165.575 53.25)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "86bf3e90-468b-4a14-b232-37099a088b4a")
+	)
+	(segment
+		(start 132.575 56.5)
+		(end 134.25 56.5)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "a9f76f76-37a2-41a4-9b0f-5dd609aaf145")
+	)
+	(segment
+		(start 141.5 47.25)
+		(end 141.5 45.68)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "b2cbe80f-e41a-47de-8b0d-aeb61e7a8887")
+	)
+	(segment
+		(start 141.5 45.68)
+		(end 141.525 45.655)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "c2762736-ecaf-4100-80f0-8a48a9a27e8a")
+	)
+	(segment
+		(start 165.575 53.25)
+		(end 165.575 54.75)
+		(width 0.25)
+		(layer "F.Cu")
+		(net "VBUS")
+		(uuid "e6520223-1736-4b00-97a0-f4073a8a4c06")
+	)
+	(via
+		(at 134.25 56.5)
+		(size 0.8)
+		(drill 0.4)
+		(layers "F.Cu" "B.Cu")
+		(net "VBUS")
+		(uuid "35664c48-6872-4a97-9ead-294e5fcc6ae8")
+	)
+	(via
+		(at 145.75 51.25)
+		(size 0.8)
+		(drill 0.4)
+		(layers "F.Cu" "B.Cu")
+		(net "VBUS")
+		(uuid "5f7f3004-3752-436b-9a2a-88d58070b650")
+	)
+	(via
+		(at 166.25 52.25)
+		(size 0.8)
+		(drill 0.4)
+		(layers "F.Cu" "B.Cu")
+		(net "VBUS")
+		(uuid "c97e4804-c76a-43ca-8150-ad2bdabe7239")
+	)
+	(via
+		(at 141.5 47.25)
+		(size 0.8)
+		(drill 0.4)
+		(layers "F.Cu" "B.Cu")
+		(capping no)
+		(covering
+			(front no)
+			(back no)
+		)
+		(plugging
+			(front no)
+			(back no)
+		)
+		(filling no)
+		(net "VBUS")
+		(uuid "e6f7b6bb-e3ac-4fda-9477-f92398fc552a")
 	)
 	(zone
 		(net "GND")
@@ -7873,7 +7996,7 @@
 		)
 	)
 	(zone
-		(net "+5V")
+		(net "VBUS")
 		(layer "B.Cu")
 		(uuid "c6f414a7-eaed-4aa6-bfa2-29c39d31416e")
 		(hatch edge 0.508)
