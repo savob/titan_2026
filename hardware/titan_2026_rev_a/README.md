@@ -44,6 +44,8 @@ This is partly achieved through hardware design with the `ROLE` signal, but some
 
 Depending on the displays used there is a solder jumper to provide them with power from either the 5&nbsp;V rail or directly from the battery.
 
+Furthermore there is an additional solder jumper to set the voltage supplied to the wheel sensor system. In 2022 they worked at 5&nbsp;V, but checking the sensors over they should have been supplied 3.3&nbsp;V - so I put the jumper to easily use one or the other.
+
 ### Standalone Operation
 
 Although not an critical design constraint, I would like these boards to be able to operate on their own for testing and even use as downlink boards for the crew outside TITAN. So I have incorporated a USB-C connection and some power switches to safely connect to the USB under any configuration of the board.
@@ -56,12 +58,13 @@ There are a multitude changes between the 2022 and 2026 versions of the TITAN bo
 - Integrated a GPS module
 - Integrated environmental sensors
 - Using proper wire to board connectors for everything rather than expecting to soldering some wires to the PCB
-- Added sensors to monitor power use of different parts of the system
+- Added sensor to monitor battery voltage and current draw per board
 - Changed the main microcontroller to an STM32 with more GPIO (STM32F105R)
 - Removed reverse polarity input protection for simplicity
 - Removed input undervoltage protection, to accommodate varying batteries
 - Added on board regulator and power switch ICs to run off USB power if not mounted on an RPi ("standalone")
 - Board "role" is determined in hardware based on the connection between the primary and secondary
 - Added jumper to select power output to the display connector
+- Introduced solder jumper to set wheel power level after finding the sensors used in 2022 were actually rated for 3.3&nbsp;V, _not 5&nbsp;V!_
 
 These cover all the changes I felt were really needed on TITAN. There was only one change that I would like but couldn't justify: integrating the nRF24L01+LNA radio used for telemetry. It would needlessly take me more time to draw the schematic, spec the parts, and then layout while not meaningfully improving any performance metric while greatly increasing the cost compared to just getting a handful of the preassembled modules online. _I'll put aside the vain desire for a majestic monolithic PCB, for now._
