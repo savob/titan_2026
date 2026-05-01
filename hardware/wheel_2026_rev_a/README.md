@@ -54,8 +54,12 @@ The precise way to do this, no _major_ guesstimations here!
     - If the hysteresis gets too large then it might make it hard to catch occasional pulses leading to slower perceived speed
 11. Spin the wheel to ensure that the LED is flashing with each spoke passing
 
-## Known Issues
+## Known IR Encoder Issue
 
-There is a fundamental issue with the use of the IR sensor for the wheel encoder: the wheel encoder would fail to track the wheel speed once the brakes were engaged as it got saturated due to IR radiation from the brake disks reaching temperatures in the multi-hundred degrees as they stopped TITAN at the end of runs.
+There is a fundamental issue with the use of the IR sensor for the wheel encoder: the wheel encoder would fail to track the wheel speed once the brakes were engaged as it gets saturated due to IR radiation from the brake disks reaching temperatures in the multi-hundred degrees as they stop TITAN at the end of runs.
 
-This issue was tolerable as we still had the GPS speed to fallback to, and the brakes would only be engaged when a run was ending so there was no longer a need to know TITAN's exact speed. **Future revisions should consider a different sensor type for the encoder, but this revision kept it since it was field proven.**
+This issue was tolerable as we still had the GPS speed to fallback to, and the brakes would only be engaged when a run was ending so there was no longer a need to know TITAN's exact speed. **Future revisions should consider a different sensor type for the encoder, but this revision kept it since it was field proven and doesn't require modifications to TITAN's wheels.**
+
+A possible hack that could be done using these boards as-is, would be to replace the IR sensor with a visible light discrete LED and photodiode or photoreceptor pair. This should avoid the issue where the brake disk temperature affects the sensor while retaining compatability with the wheels as they are.
+
+A larger overhaul of the board could move to using a magnetic system by attaching magnets to the spokes. If wheel modification is to be avoided, then inductive or capacitive proximity sensing system for the spokes could be considered but the rework needed there would be significant and need collaboration with the mechanical team.
