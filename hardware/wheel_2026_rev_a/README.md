@@ -10,6 +10,7 @@ The main changes from the last version will be in improving physical reliability
 - Changed operational amplifier to a TLV2372IDR instead of an LM358 for better performance, namely rail-to-rail output
 - Using pads to connect the data cables, headers can be soldered in later if desired
 - Removed connector to daisy-chain wheels since that is now handled on the HAT
+- Added notes to operate at 3.3&nbsp;V not 5&nbsp;V - although the system can handle it
 
 Looking on data from 2022, there was some noise on the encoder speed signal when plotted alongside the GPS derived speed. This could potentially benefit from filtering the signals, although I would really chalk it up to my firmware not properly capturing each spoke and not using a hardware timer.
 
