@@ -5070,7 +5070,7 @@
 				)
 			)
 		)
-		(property "Value" "XT30PW-F30.G.Y"
+		(property "Value" "XT30PW-F20.G.Y"
 			(at 53.34 185.42 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5135,7 +5135,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C30170176"
+		(property "LCSC" "C2913282"
 			(at 53.34 191.77 0)
 			(hide yes)
 			(show_name no)
@@ -6176,28 +6176,28 @@
 		(fields_autoplaced yes)
 		(uuid "8b11fe37-c347-45ac-87ed-dbc9d6dc0853")
 		(property "Reference" "U6"
-			(at 44.8467 73.66 0)
+			(at 50.1081 96.52 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Value" "INA219AIDCN"
-			(at 44.8467 76.2 0)
+			(at 50.1081 99.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
-		(property "Footprint" "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm"
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-8"
 			(at 30.48 95.25 0)
 			(hide yes)
 			(show_name no)
