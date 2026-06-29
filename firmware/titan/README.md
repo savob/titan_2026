@@ -1,4 +1,9 @@
-# TITAN STM32 Code
+# TITAN 2022 STM32 Code
+
+>[!WARNING]
+> This code can only target the STM32F103's of the past, there is no Arduino framework support for the STM32F105 line of chips that were used for the 2026 redesign. This was an unfortunate oversight during design.
+>
+> This code is therefore only kept here for reference as the new codebase is prepared using STM32CubeIDE
 
 This is the code for running the main microcontroller in TITAN, charged with not only collecting data but also passing it around the system like a router through a call and response system to the RPis inside TITAN or via radio to the crew.
 
