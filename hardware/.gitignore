@@ -31,7 +31,9 @@ fp-info-cache
 *.csv
 
 .history
+.history_trim
 .history/
+.history_trim/
 
 production/
 
