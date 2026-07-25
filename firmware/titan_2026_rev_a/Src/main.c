@@ -57,7 +57,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+volatile float front_speed_mps = 0;
+volatile float rear_speed_mps = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,6 +83,8 @@ static void MX_TIM2_Init(void);
 #else
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
+
+inline static float calculate_wheel_speed_mps(uint32_t rotation_period_us);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -131,16 +134,22 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  printf("Hello\n");
+  setbuf(stdin,NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
+  printf("Hello\r\n");
+  HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-	  printf("Beep\n");
+	  uint32_t capture = front_speed_mps * 1000;
+	  uint32_t capture2 = rear_speed_mps * 1000;
+	  printf("%ld, %ld\r\n", capture, capture2);
 	  HAL_Delay(1000);
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -325,7 +334,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 71;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 65535;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -352,7 +361,7 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
   {
@@ -361,13 +370,13 @@ static void MX_TIM1_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
+  sConfigIC.ICFilter = 10;
   if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN TIM1_Init 2 */
-  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+
   /* USER CODE END TIM1_Init 2 */
 
 }
@@ -393,7 +402,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 71;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 65535;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -419,7 +428,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
@@ -428,7 +437,7 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
+  sConfigIC.ICFilter = 10;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
@@ -729,26 +738,26 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(RF_EN_GPIO_Port, RF_EN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  /*Configure GPIO pins : ROLE_Pin RF_INT_Pin */
+  GPIO_InitStruct.Pin = ROLE_Pin|RF_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : RF_EN_Pin */
+  GPIO_InitStruct.Pin = RF_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(RF_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DHT_Pin */
   GPIO_InitStruct.Pin = DHT_Pin;
@@ -775,6 +784,67 @@ PUTCHAR_PROTOTYPE
 
   return ch;
 }
+
+#ifdef __cplusplus
+namespace std{
+extern "C"{
+#endif
+int _write(int fd, char *ptr, int len){
+	 (void)fd;
+	 for(int i = 0; i < len; i++){
+		 HAL_UART_Transmit(&huart4, (uint8_t *)ptr++, 1, 0xFFFF);
+	 }
+	 return len;
+}
+
+size_t _read(int fd, char *ptr, size_t len){
+	 (void)fd;
+	 size_t i;
+	 for(i = 0; i < len; i++){
+		 if (HAL_UART_Receive(&huart4, (uint8_t*)ptr++, 1, 0xFFFF) != HAL_OK) break;
+	 }
+	 return i;
+}
+
+#ifdef __cplusplus
+}
+}
+#endif
+
+
+
+inline static float calculate_wheel_speed_mps(uint32_t rotation_period_us) {
+	const float WHEEL_CIRCUMFERENCE_M = 1.0;
+
+	float speed_mps = (1000000.0 * WHEEL_CIRCUMFERENCE_M) / (float)(rotation_period_us);
+
+	return speed_mps;
+}
+
+void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
+	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
+	if (htim->Instance == TIM1) {
+		rear_speed_mps = calculate_wheel_speed_mps(captured_value);
+		return;
+	}
+	if (htim->Instance == TIM2) {
+		front_speed_mps = calculate_wheel_speed_mps(captured_value);
+		return;
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim) {
+	// On a timeout we've probably stopped, doesn't seem to work for either timer currently
+	if (htim->Instance == TIM1) {
+		rear_speed_mps = 0;
+		return;
+	}
+	if (htim->Instance == TIM2) {
+		front_speed_mps = 0;
+		return;
+	}
+}
+
 /* USER CODE END 4 */
 
 /**

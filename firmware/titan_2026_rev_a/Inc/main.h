@@ -59,14 +59,50 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define ENCODER_A_Pin GPIO_PIN_8
-#define ENCODER_A_GPIO_Port GPIOA
-#define ENCODER_B_Pin GPIO_PIN_15
-#define ENCODER_B_GPIO_Port GPIOA
+#define ROLE_Pin GPIO_PIN_15
+#define ROLE_GPIO_Port GPIOC
+#define MAIN_RX_Pin GPIO_PIN_2
+#define MAIN_RX_GPIO_Port GPIOA
+#define MAIN_TX_Pin GPIO_PIN_3
+#define MAIN_TX_GPIO_Port GPIOA
+#define RF_EN_Pin GPIO_PIN_4
+#define RF_EN_GPIO_Port GPIOC
+#define RF_INT_Pin GPIO_PIN_5
+#define RF_INT_GPIO_Port GPIOC
+#define SCL_Pin GPIO_PIN_10
+#define SCL_GPIO_Port GPIOB
+#define SDA_Pin GPIO_PIN_11
+#define SDA_GPIO_Port GPIOB
+#define LED_STAT1_RED_Pin GPIO_PIN_6
+#define LED_STAT1_RED_GPIO_Port GPIOC
+#define LED_STAT2_Pin GPIO_PIN_7
+#define LED_STAT2_GPIO_Port GPIOC
+#define LED_STAT3_Pin GPIO_PIN_8
+#define LED_STAT3_GPIO_Port GPIOC
+#define ENCODER_REAR_Pin GPIO_PIN_8
+#define ENCODER_REAR_GPIO_Port GPIOA
+#define GPS_RX_Pin GPIO_PIN_9
+#define GPS_RX_GPIO_Port GPIOA
+#define GPS_TX_Pin GPIO_PIN_10
+#define GPS_TX_GPIO_Port GPIOA
+#define ENCODER_FRONT_Pin GPIO_PIN_15
+#define ENCODER_FRONT_GPIO_Port GPIOA
+#define DEBUG_TX_Pin GPIO_PIN_10
+#define DEBUG_TX_GPIO_Port GPIOC
+#define DEBUG_RX_Pin GPIO_PIN_11
+#define DEBUG_RX_GPIO_Port GPIOC
+#define SEC_RX_Pin GPIO_PIN_12
+#define SEC_RX_GPIO_Port GPIOC
+#define SEC_TX_Pin GPIO_PIN_2
+#define SEC_TX_GPIO_Port GPIOD
 #define DHT_Pin GPIO_PIN_4
 #define DHT_GPIO_Port GPIOB
 #define CO2_Pin GPIO_PIN_6
 #define CO2_GPIO_Port GPIOB
+#define WHEEL_SCL_Pin GPIO_PIN_8
+#define WHEEL_SCL_GPIO_Port GPIOB
+#define WHEEL_SDA_Pin GPIO_PIN_9
+#define WHEEL_SDA_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
