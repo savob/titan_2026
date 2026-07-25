@@ -149,8 +149,10 @@ int main(void)
 	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
 	HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_3);
 
-	HAL_StatusTypeDef ret = ina219_setup(&hi2c2, I2C_TIMEOUT);
-	printf("INA219 setup result: %d\n\r", ret);
+	HAL_StatusTypeDef ret = ina219_setup(PRIM_INA, &hi2c2, I2C_TIMEOUT);
+	printf("Primary INA219 setup result: %d\n\r", ret);
+	ret = ina219_setup(SEC_INA, &hi2c2, I2C_TIMEOUT);
+	printf("Secondary INA219 setup result: %d\n\r", ret);
 
 	ret = atmo_setup(&hi2c2, I2C_TIMEOUT);
   /* USER CODE END 2 */
@@ -168,7 +170,7 @@ int main(void)
 			  atmo_cond.humidity_rel, atmo_cond.static_pressure_pa, atmo_cond.co2_ppm);
 
 		float battery_voltage = 0;
-		ina219_read_bus_voltage(&battery_voltage);
+		ina219_read_bus_voltage(PRIM_INA, &battery_voltage);
 		printf("%.3f V\r\n", battery_voltage);
 	}
   /* USER CODE END 3 */

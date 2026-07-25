@@ -75,7 +75,10 @@ union INA219ConfigReg {
 
 static enum INA219RegAdd last_reg_pointed_to = INA_REG_INVALID; // Used to speed up repeated reads
 
-static const uint8_t INA219_ADD = 0x40 << 1; // Hard wired address. Must be left shifted before use in I2C HAL.
+// Must be left shifted before use in I2C HAL
+const uint8_t PRIM_INA = 0x40 << 1; // Address for primary board's INA219
+const uint8_t SEC_INA = 0x44 << 1;	// Address for secondary board's INA219
+
 static I2C_HandleTypeDef* ina219_i2c;
 static uint32_t ina219_timeout = 1000;
 static float current_lsb_a = 0; // Calculated value of current per LSB in register
@@ -83,20 +86,20 @@ static float current_lsb_a = 0; // Calculated value of current per LSB in regist
 static const float SHUNT_RESISTANCE_OHM = 0.01;
 static const float EXPECTED_MAX_CURRENT_A = 5.0;
 
-static HAL_StatusTypeDef ina219_read_register(enum INA219RegAdd target, uint16_t* destination) {
+static HAL_StatusTypeDef ina219_read_register(const uint8_t INA_ADD, enum INA219RegAdd target, uint16_t* destination) {
 	HAL_StatusTypeDef ret = HAL_OK;
 	uint8_t temp_buffer[2];
 
 	// Write register address/pointer as needed
 	if (last_reg_pointed_to != target) {
 		temp_buffer[0] = target;
-		ret = HAL_I2C_Master_Transmit(ina219_i2c, INA219_ADD, temp_buffer, 1, ina219_timeout);
+		ret = HAL_I2C_Master_Transmit(ina219_i2c, INA_ADD, temp_buffer, 1, ina219_timeout);
 		if (ret != HAL_OK) return ret;
 		last_reg_pointed_to = target; // Only update on successful transfers
 	}
 
 	// Get data
-	ret = HAL_I2C_Master_Receive(ina219_i2c, INA219_ADD, temp_buffer, 2, ina219_timeout);
+	ret = HAL_I2C_Master_Receive(ina219_i2c, INA_ADD, temp_buffer, 2, ina219_timeout);
 	if (ret != HAL_OK) return ret;
 
 	uint16_t reconstructed;
@@ -107,13 +110,13 @@ static HAL_StatusTypeDef ina219_read_register(enum INA219RegAdd target, uint16_t
 	return HAL_OK;
 }
 
-static HAL_StatusTypeDef ina219_write_register(enum INA219RegAdd target, uint16_t value) {
+static HAL_StatusTypeDef ina219_write_register(const uint8_t INA_ADD, enum INA219RegAdd target, uint16_t value) {
 	HAL_StatusTypeDef ret = HAL_OK;
 	uint8_t temp_buffer[3];
 	temp_buffer[0] = target;
 	temp_buffer[1] = (uint8_t) (value >> 8) & 0xFF;
 	temp_buffer[2] = (uint8_t) (value >> 0) & 0xFF;
-	ret = HAL_I2C_Master_Transmit(ina219_i2c, INA219_ADD, temp_buffer, 3, ina219_timeout);
+	ret = HAL_I2C_Master_Transmit(ina219_i2c, INA_ADD, temp_buffer, 3, ina219_timeout);
 
 	if (ret != HAL_OK) return ret;
 	last_reg_pointed_to = target; // Only update on successful transfers
@@ -121,7 +124,7 @@ static HAL_StatusTypeDef ina219_write_register(enum INA219RegAdd target, uint16_
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef ina219_update_calibration(float expected_max_current_a, float shunt_resistance_ohm) {
+HAL_StatusTypeDef ina219_update_calibration(const uint8_t INA_ADD, float expected_max_current_a, float shunt_resistance_ohm) {
 	// All this math is from 8.5.1 in the data sheet
 	current_lsb_a = expected_max_current_a / 32768.0;
 
@@ -130,17 +133,17 @@ HAL_StatusTypeDef ina219_update_calibration(float expected_max_current_a, float 
 	uint16_t truncated_calibration_reg = (uint16_t) calibration_reg;
 	truncated_calibration_reg = truncated_calibration_reg & 0xFFFE; // Last bit cannot be set, see 8.6.4.1 in data sheet
 
-	return ina219_write_register(INA_REG_CALIBRATION, truncated_calibration_reg);
+	return ina219_write_register(INA_ADD, INA_REG_CALIBRATION, truncated_calibration_reg);
 }
 
-HAL_StatusTypeDef ina219_setup(I2C_HandleTypeDef* bus, uint32_t timeout) {
+HAL_StatusTypeDef ina219_setup(const uint8_t INA_ADD, I2C_HandleTypeDef* bus, uint32_t timeout) {
 	ina219_i2c = bus;
 	ina219_timeout = timeout;
 
 	const uint32_t TRIAL_COUNT = 5;
 
 	HAL_StatusTypeDef ret = HAL_OK;
-	ret = HAL_I2C_IsDeviceReady(ina219_i2c, INA219_ADD, TRIAL_COUNT, ina219_timeout);
+	ret = HAL_I2C_IsDeviceReady(ina219_i2c, INA_ADD, TRIAL_COUNT, ina219_timeout);
 	if (ret != HAL_OK) return ret;
 
 	union INA219ConfigReg default_config;
@@ -153,16 +156,16 @@ HAL_StatusTypeDef ina219_setup(I2C_HandleTypeDef* bus, uint32_t timeout) {
 	default_config.shunt_adc_setting = INA_ADC_12_BIT;
 	default_config.RESERVED = 0;
 
-	ret = ina219_write_register(INA_REG_CONFIG, default_config.entire_register);
+	ret = ina219_write_register(INA_ADD, INA_REG_CONFIG, default_config.entire_register);
 	if (ret != HAL_OK) return ret;
 
-	return ina219_update_calibration(EXPECTED_MAX_CURRENT_A, SHUNT_RESISTANCE_OHM);
+	return ina219_update_calibration(INA_ADD, EXPECTED_MAX_CURRENT_A, SHUNT_RESISTANCE_OHM);
 }
 
-HAL_StatusTypeDef ina219_read_power(float * result_w) {
+HAL_StatusTypeDef ina219_read_power(const uint8_t INA_ADD, float * result_w) {
 	HAL_StatusTypeDef ret;
 	uint16_t raw_reading;
-	ret = ina219_read_register(INA_REG_POWER, &raw_reading);
+	ret = ina219_read_register(INA_ADD, INA_REG_POWER, &raw_reading);
 	if (ret != HAL_OK) return ret;
 
 	*result_w = raw_reading * (current_lsb_a * 20.0);
@@ -170,10 +173,10 @@ HAL_StatusTypeDef ina219_read_power(float * result_w) {
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef ina219_read_bus_voltage(float * result_v) {
+HAL_StatusTypeDef ina219_read_bus_voltage(const uint8_t INA_ADD, float * result_v) {
 	HAL_StatusTypeDef ret;
 	uint16_t raw_reading;
-	ret = ina219_read_register(INA_REG_BUS_VOLTAGE, &raw_reading);
+	ret = ina219_read_register(INA_ADD, INA_REG_BUS_VOLTAGE, &raw_reading);
 	if (ret != HAL_OK) return ret;
 
 	// We don't really make use of these flags but here's them getting collected
@@ -187,10 +190,10 @@ HAL_StatusTypeDef ina219_read_bus_voltage(float * result_v) {
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef ina219_read_bus_current(float * result_a) {
+HAL_StatusTypeDef ina219_read_bus_current(const uint8_t INA_ADD, float * result_a) {
 	HAL_StatusTypeDef ret;
 	uint16_t raw_reading;
-	ret = ina219_read_register(INA_REG_CURRENT, &raw_reading);
+	ret = ina219_read_register(INA_ADD, INA_REG_CURRENT, &raw_reading);
 	if (ret != HAL_OK) return ret;
 
 	*result_a = raw_reading * current_lsb_a;
