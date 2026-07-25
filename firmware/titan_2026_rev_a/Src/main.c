@@ -22,7 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ina219.h"
+#include "atmosphere.h"
+#include "titan_data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,6 +62,8 @@ UART_HandleTypeDef huart2;
 volatile float front_speed_kmph = 0;
 volatile float rear_speed_kmph = 0;
 volatile float co2_ppm = 0;
+
+const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -133,29 +137,40 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  setbuf(stdin,NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
-  printf("Hello\r\n");
-  HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_2);
-  HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1); // Don't care for interrupt on capture here
-  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
-  HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_3);
-  Error_Handler();
+	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
+	printf("Hello\r\n");
+
+	// Start timers once everything's initialized properly
+	HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_2);
+	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1); // Don't care for interrupt on capture here
+	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
+	HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_3);
+
+	HAL_StatusTypeDef ret = ina219_setup(&hi2c2, I2C_TIMEOUT);
+	printf("INA219 setup result: %d\n\r", ret);
+
+	ret = atmo_setup(&hi2c2, I2C_TIMEOUT);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  float front = co2_ppm;
-	  printf("%.3f\r\n", front);
-	  HAL_Delay(1000);
+	while (1) {
+		HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+		struct AtmoConditions atmo_cond = {0};
+		ret = atmo_conditions_update(&atmo_cond);
+		printf("[%d]T: %.2f\tH: %.2f\tP: %.2f\tCO2: %d\n\r", ret, atmo_cond.temperature_c,
+			  atmo_cond.humidity_rel, atmo_cond.static_pressure_pa, atmo_cond.co2_ppm);
+
+		float battery_voltage = 0;
+		ina219_read_bus_voltage(&battery_voltage);
+		printf("%.3f V\r\n", battery_voltage);
+	}
   /* USER CODE END 3 */
 }
 
