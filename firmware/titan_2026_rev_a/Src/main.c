@@ -59,6 +59,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 volatile float front_speed_kmph = 0;
 volatile float rear_speed_kmph = 0;
+volatile float co2_ppm = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,8 +84,6 @@ static void MX_TIM2_Init(void);
 #else
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
-
-inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -137,18 +136,20 @@ int main(void)
   setbuf(stdin,NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
   printf("Hello\r\n");
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
   HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_2);
+  HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1); // Don't care for interrupt on capture here
+  HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
+  HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  float front = front_speed_kmph;
-	  float rear = rear_speed_kmph;
-	  printf("%.3f, %.3f\r\n", front, rear);
+	  float front = co2_ppm;
+	  printf("%.3f\r\n", front);
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
@@ -578,12 +579,13 @@ static void MX_TIM4_Init(void)
   TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_IC_InitTypeDef sConfigIC = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM4_Init 1 */
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 0;
+  htim4.Init.Prescaler = 1207;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -597,6 +599,10 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_OC_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_IC_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
@@ -605,7 +611,7 @@ static void MX_TIM4_Init(void)
   sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
   sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sSlaveConfig.TriggerPrescaler = TIM_ICPSC_DIV1;
-  sSlaveConfig.TriggerFilter = 0;
+  sSlaveConfig.TriggerFilter = 15;
   if (HAL_TIM_SlaveConfigSynchro(&htim4, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
@@ -613,13 +619,14 @@ static void MX_TIM4_Init(void)
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
   sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
+  sConfigIC.ICFilter = 15;
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
   sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
   sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+  sConfigIC.ICFilter = 0;
   if (HAL_TIM_IC_ConfigChannel(&htim4, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
@@ -627,6 +634,14 @@ static void MX_TIM4_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 65530;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -868,6 +883,32 @@ inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count) {
 	return speed_km_p_h;
 }
 
+inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count) {
+	// Duty should always be smaller than the full period
+	if (duty_count > period_count) {
+		return -1;
+	}
+	const float duty = (float)duty_count;
+	const float period = (float)period_count;
+
+	// To deal with the 5% tolerance on timing the measurements are all derived from portions
+
+	const float END_PORTION = 2.0 / 1004.0; // The portion of constant dead time for high and low portions
+	const float END_TIME = period * END_PORTION;
+	const float HIGH_TIME = duty - END_TIME;
+
+	// Check if the pulse captured was too small and mistaken for negative
+	if (HIGH_TIME < 0) {
+		return -1;
+	}
+
+	const float DATA_PERIOD = period * (1 - (2 * END_PORTION)); // Discount the high and low dead time
+	const float PORTION = HIGH_TIME / DATA_PERIOD; // The actual data duty/portion discounting the holds at each level
+
+	const float PPM_RANGE = 5000.0; // Range of measurement for the CO2 sensor installed
+	return (PORTION * PPM_RANGE);
+}
+
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
 	if (htim->Instance == TIM1) {
@@ -876,6 +917,13 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	}
 	if (htim->Instance == TIM2) {
 		front_speed_kmph = calculate_wheel_speed_kmph(captured_value);
+		return;
+	}
+
+	if (htim->Instance == TIM4) {
+		// CO2 calculation
+		uint32_t duty_period = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2); // All our captures need channel 1 value
+		co2_ppm = calculate_co2_ppm(duty_period, captured_value);
 		return;
 	}
 }
@@ -888,6 +936,10 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 	}
 	if (htim->Instance == TIM2) {
 		front_speed_kmph = 0;
+		return;
+	}
+	if (htim->Instance == TIM4) {
+		co2_ppm = 0;
 		return;
 	}
 }
