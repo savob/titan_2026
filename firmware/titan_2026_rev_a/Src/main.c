@@ -57,8 +57,8 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-volatile float front_speed_mps = 0;
-volatile float rear_speed_mps = 0;
+volatile float front_speed_kmph = 0;
+volatile float rear_speed_kmph = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,7 +84,7 @@ static void MX_TIM2_Init(void);
 #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
 #endif /* __GNUC__ */
 
-inline static float calculate_wheel_speed_mps(uint32_t rotation_period_us);
+inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -138,15 +138,17 @@ int main(void)
   printf("Hello\r\n");
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
   HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+  HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint32_t capture = front_speed_mps * 1000;
-	  uint32_t capture2 = rear_speed_mps * 1000;
-	  printf("%ld, %ld\r\n", capture, capture2);
+	  float front = front_speed_kmph;
+	  float rear = rear_speed_kmph;
+	  printf("%.3f, %.3f\r\n", front, rear);
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
@@ -329,12 +331,14 @@ static void MX_TIM1_Init(void)
   TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_IC_InitTypeDef sConfigIC = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
   /* USER CODE BEGIN TIM1_Init 1 */
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 71;
+  htim1.Init.Prescaler = 215;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 65535;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -350,6 +354,10 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   if (HAL_TIM_IC_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OC_Init(&htim1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -375,6 +383,28 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 65000;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_OC_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
@@ -397,12 +427,13 @@ static void MX_TIM2_Init(void)
   TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_IC_InitTypeDef sConfigIC = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 71;
+  htim2.Init.Prescaler = 215;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 65535;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -417,6 +448,10 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -439,6 +474,14 @@ static void MX_TIM2_Init(void)
   sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
   sConfigIC.ICFilter = 10;
   if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
+  sConfigOC.Pulse = 65000;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
@@ -813,34 +856,38 @@ size_t _read(int fd, char *ptr, size_t len){
 
 
 
-inline static float calculate_wheel_speed_mps(uint32_t rotation_period_us) {
-	const float WHEEL_CIRCUMFERENCE_M = 1.0;
+inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count) {
+	const float CIRCUMFERENCE_M = 2.136; // Wheel circumference
+	const float SPOKES = 6.0; // The number of spokes (counts) per complete wheel rotation
+	const float US_PER_COUNT = 3.0; // The number of microseconds per clock tick
 
-	float speed_mps = (1000000.0 * WHEEL_CIRCUMFERENCE_M) / (float)(rotation_period_us);
+	const float COUNT_TO_KM_P_H = 3600000.0 * CIRCUMFERENCE_M / (SPOKES * US_PER_COUNT); // Divide this by period in count to get speed in km/h
 
-	return speed_mps;
+	float speed_km_p_h = COUNT_TO_KM_P_H / (float)(capture_period_count);
+
+	return speed_km_p_h;
 }
 
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
 	if (htim->Instance == TIM1) {
-		rear_speed_mps = calculate_wheel_speed_mps(captured_value);
+		rear_speed_kmph = calculate_wheel_speed_kmph(captured_value);
 		return;
 	}
 	if (htim->Instance == TIM2) {
-		front_speed_mps = calculate_wheel_speed_mps(captured_value);
+		front_speed_kmph = calculate_wheel_speed_kmph(captured_value);
 		return;
 	}
 }
 
-void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim) {
+void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 	// On a timeout we've probably stopped, doesn't seem to work for either timer currently
 	if (htim->Instance == TIM1) {
-		rear_speed_mps = 0;
+		rear_speed_kmph = 0;
 		return;
 	}
 	if (htim->Instance == TIM2) {
-		front_speed_mps = 0;
+		front_speed_kmph = 0;
 		return;
 	}
 }
