@@ -10,7 +10,6 @@
 #include "atmosphere.h"
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_i2c.h"
-#include "scd4x.h"
 
 #include "bosch_wrappers.h"
 #include "../../BME280_SensorAPI/bme280.h"
@@ -30,10 +29,6 @@ static struct bme280_dev dev_bme280 = {
 
 HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms) {
 	bool any_error = false;
-
-	HAL_StatusTypeDef ret_scd4x = scd4x_setup(bus, i2c_timeout_ms);
-	printf("SCD41 setup result: %d\n\r", ret_scd4x);
-	// if (ret_scd4x != HAL_OK) any_error = true; // Ignore for now since it isn't installed on any boards
 
 	bosch_adjust_i2c_timeout(i2c_timeout_ms);
 	bme280_interface.i2c_handle = bus;
@@ -65,13 +60,6 @@ HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms) {
 
 HAL_StatusTypeDef atmo_conditions_update(struct AtmoConditions* target) {
 	bool any_error = false; // Used to keep track if any interface has errors
-
-	HAL_StatusTypeDef ret_scd4x = HAL_OK;
-	ret_scd4x = scd4x_read_co2(&target->co2_ppm);
-	if (ret_scd4x != HAL_OK) {
-		printf("CO2 update issue: %d\n\r", ret_scd4x);
-		any_error = true;
-	}
 
     struct bme280_data bme_data;
     int8_t ret_bme280 = bme280_get_sensor_data(BME280_ALL, &bme_data, &dev_bme280);

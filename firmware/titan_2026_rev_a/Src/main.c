@@ -22,8 +22,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
 #include "ina219.h"
 #include "atmosphere.h"
+#include "scd4x.h"
 #include "titan_data.h"
 /* USER CODE END Includes */
 
@@ -61,7 +63,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 volatile float front_speed_kmph = 0;
 volatile float rear_speed_kmph = 0;
-volatile float co2_ppm = 0;
+volatile float mh_z19_co2_ppm = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 /* USER CODE END PV */
@@ -155,6 +157,15 @@ int main(void)
 	printf("Secondary INA219 setup result: %d\n\r", ret);
 
 	ret = atmo_setup(&hi2c2, I2C_TIMEOUT);
+
+	HAL_StatusTypeDef ret_scd4x = scd4x_setup(&hi2c2, I2C_TIMEOUT);
+	if (ret_scd4x == HAL_OK) {
+		printf("SCD41 setup success\n\r", ret_scd4x);
+	}
+	else {
+		printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret_scd4x);
+	}
+	const bool SCD_AVAILABLE = ret_scd4x == HAL_OK;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -165,6 +176,20 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		struct AtmoConditions atmo_cond = {0};
+
+		// Gather combined CO2 reading
+		if (SCD_AVAILABLE) {
+			HAL_StatusTypeDef ret_scd4x = HAL_OK;
+			ret_scd4x = scd4x_read_co2(&atmo_cond.co2_ppm);
+			if (ret_scd4x != HAL_OK) {
+				printf("CO2 update issue: %d\n\r", ret_scd4x);
+			}
+		}
+		if (mh_z19_co2_ppm > 0) { // Include MH sensor reading too if valid
+			if (atmo_cond.co2_ppm <= 0) atmo_cond.co2_ppm = (uint16_t)mh_z19_co2_ppm;
+			else atmo_cond.co2_ppm = (atmo_cond.co2_ppm + (uint16_t)mh_z19_co2_ppm) / 2;
+		}
+
 		ret = atmo_conditions_update(&atmo_cond);
 		printf("[%d]T: %.2f\tH: %.2f\tP: %.2f\tCO2: %d\n\r", ret, atmo_cond.temperature_c,
 			  atmo_cond.humidity_rel, atmo_cond.static_pressure_pa, atmo_cond.co2_ppm);
@@ -939,8 +964,8 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 
 	if (htim->Instance == TIM4) {
 		// CO2 calculation
-		uint32_t duty_period = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2); // All our captures need channel 1 value
-		co2_ppm = calculate_co2_ppm(duty_period, captured_value);
+		uint32_t duty_period = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+		mh_z19_co2_ppm = calculate_co2_ppm(duty_period, captured_value);
 		return;
 	}
 }
@@ -956,7 +981,7 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 		return;
 	}
 	if (htim->Instance == TIM4) {
-		co2_ppm = 0;
+		mh_z19_co2_ppm = 0;
 		return;
 	}
 }
