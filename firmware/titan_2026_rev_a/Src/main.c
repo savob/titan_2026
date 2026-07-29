@@ -27,6 +27,7 @@
 #include "atmosphere.h"
 #include "scd4x.h"
 #include "titan_data.h"
+#include "mlx90614.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -160,18 +161,32 @@ int main(void)
 
 	HAL_StatusTypeDef ret_scd4x = scd4x_setup(&hi2c2, I2C_TIMEOUT);
 	if (ret_scd4x == HAL_OK) {
-		printf("SCD41 setup success\n\r", ret_scd4x);
+		printf("SCD41 setup success\n\r");
 	}
 	else {
 		printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret_scd4x);
 	}
 	const bool SCD_AVAILABLE = ret_scd4x == HAL_OK;
+
+
+	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
+	struct MLXDevice front_brake = {
+			.address = 0x5A,
+			.i2c_bus = &hi2c1,
+	};
+	ret = mlx_setup(front_brake, BRAKE_DISK_EMISSIVITY);
+	if (ret == HAL_OK) {
+		printf("Front brake disk setup success at address 0x%2X\n\r", front_brake.address);
+	}
+	else {
+		printf("Front brake disk setup failed, error code: %d (Address: 0x%2X)\n\r", ret, front_brake.address);
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-		HAL_Delay(1000);
+		HAL_Delay(2000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -197,6 +212,15 @@ int main(void)
 		float battery_voltage = 0;
 		ina219_read_bus_voltage(PRIM_INA, &battery_voltage);
 		printf("%.3f V\r\n", battery_voltage);
+
+		float temp_temp;
+		ret = mlx_read_object_temperature_deg_c(front_brake, &temp_temp);
+		if (ret == HAL_OK) {
+			printf("%.2f C\r\n", temp_temp);
+		}
+		else {
+			printf("Error %d with MLX read\r\n", ret);
+		}
 	}
   /* USER CODE END 3 */
 }
@@ -269,7 +293,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

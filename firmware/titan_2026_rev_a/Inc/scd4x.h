@@ -5,8 +5,8 @@
  *      Author: savo
  */
 
-#ifndef INC_INA219_H_
-#define INC_INA219_H_
+#ifndef INC_SCD4X_H_
+#define INC_SCD4X_H_
 
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_i2c.h"
