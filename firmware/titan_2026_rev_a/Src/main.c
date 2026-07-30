@@ -60,11 +60,14 @@ UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
 volatile float front_speed_kmph = 0;
 volatile float rear_speed_kmph = 0;
 volatile float mh_z19_co2_ppm = 0;
+
+volatile uint16_t gps_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 /* USER CODE END PV */
@@ -72,6 +75,7 @@ const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
@@ -127,6 +131,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM3_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
@@ -181,6 +186,11 @@ int main(void)
 	else {
 		printf("Front brake disk setup failed, error code: %d (Address: 0x%2X)\n\r", ret, front_brake.address);
 	}
+
+	const uint16_t GPS_BUFFER_SIZE = 500;
+	char gps_buffer[GPS_BUFFER_SIZE];
+	HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -221,6 +231,14 @@ int main(void)
 		else {
 			printf("Error %d with MLX read\r\n", ret);
 		}
+
+		if (gps_message_length > 0) {
+			printf("GPS message received: \"%s\"\r\n", gps_buffer);
+			gps_message_length = 0;
+			memset(gps_buffer, 0, GPS_BUFFER_SIZE);
+			HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+		}
+
 	}
   /* USER CODE END 3 */
 }
@@ -799,7 +817,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -846,6 +864,22 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
@@ -1010,6 +1044,11 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 	}
 }
 
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+	gps_message_length = Size;  // Number of bytes received in the most recent message
+	// Leave the trigger for the next DMA until after the buffer parsed or copied elsewhere to prevent the current message being lost
+}
 /* USER CODE END 4 */
 
 /**
@@ -1019,27 +1058,27 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
 
-  // Reconfigure the status LEDs to be off other than red flashing
-  TIM_OC_InitTypeDef sConfigOC = {0};
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 7199;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 9999;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  HAL_TIM_Base_Init(&htim3);
+	// Reconfigure the status LEDs to be off other than red flashing
+	TIM_OC_InitTypeDef sConfigOC = {0};
+	htim3.Instance = TIM3;
+	htim3.Init.Prescaler = 7199;
+	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim3.Init.Period = 9999;
+	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	HAL_TIM_Base_Init(&htim3);
 
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 4999;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
-  sConfigOC.Pulse = 0;
-  HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
-  HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 4999;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1);
+	sConfigOC.Pulse = 0;
+	HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2);
+	HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3);
 
 	while (1) {
 	}
