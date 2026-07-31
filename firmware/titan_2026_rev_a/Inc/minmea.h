@@ -38,6 +38,7 @@ enum minmea_sentence_id {
     MINMEA_SENTENCE_RMC,
     MINMEA_SENTENCE_VTG,
     MINMEA_SENTENCE_ZDA,
+    MINMEA_SENTENCE_TXT,
 };
 
 struct minmea_float {
@@ -196,6 +197,21 @@ struct minmea_sentence_zda {
     int minute_offset;
 };
 
+struct minmea_sentence_txt {
+    union minmea_type type;
+    int total_sentences_expected;
+    int sentence_number;
+    int text_identifier;
+    char message[64];
+};
+
+struct GPSSummary {
+	bool valid_position;
+	float latitidue_deg;
+	float longitude_deg;
+	float speed_kmph;
+};
+
 /**
  * Calculate raw sentence checksum. Does not check sentence integrity.
  */
@@ -249,6 +265,7 @@ bool minmea_parse_gst(struct minmea_sentence_gst *frame, const char *sentence);
 bool minmea_parse_gsv(struct minmea_sentence_gsv *frame, const char *sentence);
 bool minmea_parse_vtg(struct minmea_sentence_vtg *frame, const char *sentence);
 bool minmea_parse_zda(struct minmea_sentence_zda *frame, const char *sentence);
+bool minmea_parse_txt(struct minmea_sentence_txt *frame, const char *sentence);
 
 /**
  * Convert GPS UTC date/time representation to a UNIX calendar time.
@@ -311,6 +328,12 @@ static inline float minmea_tocoord(const struct minmea_float *f)
 static inline bool minmea_isfield(char c) {
     return isprint((unsigned char) c) && c != ',' && c != '*';
 }
+
+/**
+ * Process a buffer containing potentially multiple NMEA messages to update a summary of GPS data
+ * Returns true if parsed entirely successfully, false if any issue was encountered
+ */
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSSummary* summary);
 
 #ifdef __cplusplus
 }

@@ -147,7 +147,7 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
-	printf("Starting up TITAN 2026\r\n");
+	printf("\r\n==========================\r\nStarting up TITAN 2026\r\n");
 
 	// Start timers once everything's initialized properly
 	HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
@@ -220,17 +220,21 @@ int main(void)
 
 		float temp_temp;
 		ret = mlx_read_object_temperature_deg_c(front_brake, &temp_temp);
+#ifdef DEBUG
 		if (ret == HAL_OK) {
 			printf("Front brake: %.2f C\r\n", temp_temp);
 		}
 		else {
 			// printf("Error %d with MLX read\r\n", ret);
 		}
-
+#endif
 		if (gps_message_length > 0) {
-			printf("GPS message received: \"%s\"\r\n", gps_buffer);
-			memset(gps_buffer, 0, gps_message_length); // Clear out old message
+			if (gps_message_length < GPS_BUFFER_SIZE) gps_buffer[gps_message_length] = '\0'; // Null terminate buffer for potential printing
+
+			struct GPSSummary gps_data;
+			minmea_process_buffer(gps_buffer, (size_t)gps_message_length, &gps_data);
 			gps_message_length = 0;
+
 			HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
 		}
 	}

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #define boolstr(s) ((s) ? "true" : "false")
 #define countof(array) (sizeof(array) / sizeof(array[0]))
@@ -365,6 +366,7 @@ struct sentence_id_map_entry sentence_id_map[] = {
     { "RMC", MINMEA_SENTENCE_RMC },
     { "VTG", MINMEA_SENTENCE_VTG },
     { "ZDA", MINMEA_SENTENCE_ZDA },
+    { "TXT", MINMEA_SENTENCE_TXT },
 };
 
 const char* minmea_sentence(enum minmea_sentence_id id) {
@@ -640,6 +642,22 @@ bool minmea_parse_zda(struct minmea_sentence_zda *frame, const char *sentence)
   return true;
 }
 
+bool minmea_parse_txt(struct minmea_sentence_txt *frame, const char *sentence)
+{
+  // $GPZDA,201530.00,04,07,2002,00,00*60
+  if(!minmea_scan(sentence, "tiiis",
+            &frame->type,
+	          &frame->total_sentences_expected,
+	          &frame->sentence_number,
+	          &frame->text_identifier,
+	          &frame->message))
+      return false;
+    if (memcmp(frame->type.sentence_id, "TXT", sizeof(frame->type.sentence_id)))
+      return false;
+
+  return true;
+}
+
 int minmea_getdatetime(struct tm *tm, const struct minmea_date *date, const struct minmea_time *time_)
 {
     if (date->year == -1 || time_->hours == -1)
@@ -668,7 +686,7 @@ int minmea_gettime(struct timespec *ts, const struct minmea_date *date, const st
     if (minmea_getdatetime(&tm, date, time_))
         return -1;
 
-    time_t timestamp = timegm(&tm); /* See README.md if your system lacks timegm(). */
+    time_t timestamp = mktime(&tm); /* See README.md if your system lacks timegm(). */
     if (timestamp != (time_t)-1) {
         ts->tv_sec = timestamp;
         ts->tv_nsec = time_->microseconds * 1000;
@@ -676,6 +694,93 @@ int minmea_gettime(struct timespec *ts, const struct minmea_date *date, const st
     } else {
         return -1;
     }
+}
+
+static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* summary) {
+    switch (minmea_sentence_id(buffer, true)) {
+		case MINMEA_SENTENCE_RMC: {
+			struct minmea_sentence_rmc frame;
+			if (minmea_parse_rmc(&frame, buffer)) {
+				summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+				summary->longitude_deg = minmea_tocoord(&frame.longitude);
+				summary->speed_kmph = minmea_tocoord(&frame.speed);
+				summary->valid_position = frame.valid;
+				return true;
+			}
+			else {
+				printf("$xxRMC sentence is not parsed\n");
+			}
+		} break;
+
+		case MINMEA_SENTENCE_GLL: {
+			struct minmea_sentence_gll frame;
+			if (minmea_parse_gll(&frame, buffer)) {
+				summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+				summary->longitude_deg = minmea_tocoord(&frame.longitude);
+				summary->valid_position = frame.status == 'A';
+				return true;
+			}
+			else {
+				printf("$xxRMC sentence is not parsed\n");
+			}
+		} break;
+
+        case MINMEA_SENTENCE_GGA: {
+            struct minmea_sentence_gga frame;
+            if (minmea_parse_gga(&frame, buffer)) {
+                summary->valid_position = frame.fix_quality != 0 && frame.satellites_tracked > 3;
+                summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+                summary->longitude_deg = minmea_tocoord(&frame.longitude);
+                return true;
+            }
+            else {
+                printf("$xxGGA sentence is not parsed\n");
+            }
+        } break;
+
+        case MINMEA_SENTENCE_TXT: {
+           struct minmea_sentence_txt frame;
+           if (minmea_parse_txt(&frame, buffer)) {
+                printf("GPS message [%d of %d][ID: %d]: \"%s\"\n", frame.sentence_number, frame.total_sentences_expected, frame.text_identifier, frame.message);
+                return true;
+           }
+           else {
+                printf("$xxTXT sentence is not parsed\n");
+           }
+        } break;
+
+        case MINMEA_INVALID: // Ignore invalid/unrecognized sentences
+        	return false;
+
+        default:
+#ifdef DEBUG
+        	char start[7] = {0};
+        	memcpy(start, buffer, 6);
+            printf("GPS %s sentences are not parsed\n", start);
+#endif
+            return true;
+    }
+    return false;
+}
+
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSSummary* summary) {
+	bool all_parsed_ok = true;
+
+	for (size_t i = 0; i < BUFFER_LENGTH;) {
+		size_t start_of_sentence = i;
+		while (buffer[i] != '\n' && buffer[i] != '\r') {
+			i++;
+			if (i >= BUFFER_LENGTH) return false; // Buffer isn't properly terminated
+		}
+		while (buffer[i] == '\n' || buffer[i] == '\r') {
+			buffer[i] = '\0'; // Null terminate for parser to stop
+			i++;
+		}
+		// printf("  GNSS Line: \"%s\"\r\n", &buffer[start_of_sentence]);
+		all_parsed_ok = all_parsed_ok && process_gps_string(&buffer[start_of_sentence], i - start_of_sentence, summary);
+	}
+
+	return all_parsed_ok;
 }
 
 /* vim: set ts=4 sw=4 et: */
