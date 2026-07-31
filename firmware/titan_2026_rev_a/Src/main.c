@@ -28,6 +28,7 @@
 #include "scd4x.h"
 #include "titan_data.h"
 #include "mlx90614.h"
+#include "minmea.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -167,7 +168,7 @@ int main(void)
 	ret = scd4x_setup(&hi2c2, I2C_TIMEOUT);
 	const bool SCD_AVAILABLE = ret == HAL_OK;
 	if (ret == HAL_OK) printf("SCD41 setup success\n\r");
-	else printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret_scd4x);
+	else printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret);
 
 	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
 	struct MLXDevice front_brake = {
@@ -183,7 +184,7 @@ int main(void)
 	}
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
-	char gps_buffer[GPS_BUFFER_SIZE] = {0};
+	char gps_buffer[GPS_BUFFER_SIZE] = {};
 	HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
 
   /* USER CODE END 2 */
