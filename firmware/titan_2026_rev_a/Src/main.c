@@ -64,7 +64,6 @@ UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
@@ -198,7 +197,8 @@ int main(void)
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
-	HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+	ret = HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+	if (ret != HAL_OK) Error_Handler();
 
 
 	const uint16_t COMMS_BUFFER_SIZE = 64; // Buffer size for data communication buffers
@@ -208,8 +208,10 @@ int main(void)
 	char rpi_buffer_out[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_out[COMMS_BUFFER_SIZE] = {};
 	char radio_buffer_out[COMMS_BUFFER_SIZE] = {};
-	HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
-	HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
+	ret = HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
+	if (ret != HAL_OK) Error_Handler();
+	ret = HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
+	if (ret != HAL_OK) Error_Handler();
 
   /* USER CODE END 2 */
 
@@ -277,19 +279,48 @@ int main(void)
 			case MESSAGE_PARSED_OK_SEND_RESPONSE:
 				ret = HAL_UART_Transmit_DMA(RPI_UART, (uint8_t*)rpi_buffer_out, length_to_send);
 #ifdef DEBUG
-				if (ret != HAL_OK) printf("Failed to send response to RPi: %d", ret);
+				if (ret != HAL_OK) printf("Failed to send response to primary: %d", ret);
 				break;
 			case MESSAGE_NOT_RECOGNIZED:
-				printf("Failed to recognize message type \'%c\' in \"%s\" from RPi\r\n", rpi_buffer_in[0], rpi_buffer_in);
+				printf("Failed to recognize message type \'%c\' in \"%s\" from primary\r\n", rpi_buffer_in[0], rpi_buffer_in);
 				break;
 			case MESSAGE_PARSING_ISSUE:
-				printf("Failed to parse \"%s\" for message type \'%c\' from RPi\r\n", &rpi_buffer_in[1], rpi_buffer_in[0]);
+				printf("Failed to parse \"%s\" for message type \'%c\' from primary\r\n", &rpi_buffer_in[1], rpi_buffer_in[0]);
 				break;
 			case MESSAGE_RESPONSE_ISSUE:
-				printf("Failed to prepare response to message type \'%c\' for RPi\r\n", rpi_buffer_in[0]);
+				printf("Failed to prepare response to message type \'%c\' for primary\r\n", rpi_buffer_in[0]);
 				break;
 			default:
-				printf("Error %d: processing \"%s\" from RPi\r\n", status, rpi_buffer_in);
+				printf("Error %d: processing \"%s\" from primary\r\n", status, rpi_buffer_in);
+#endif
+				break;
+			}
+		}
+		if (stm_message_length > 0) {
+			enum MessageStatus status = process_message(&summary, (uint8_t*)stm_buffer_in, stm_message_length, (uint8_t*)stm_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
+			memset(stm_buffer_in, 0, stm_message_length);
+			stm_message_length = 0;
+			HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
+
+			switch (status) {
+			case MESSAGE_PARSED_OK_NO_RESPONSE:
+				break; // No further action needed
+			case MESSAGE_PARSED_OK_SEND_RESPONSE:
+				ret = HAL_UART_Transmit_IT(STM_UART, (uint8_t*)stm_buffer_out, length_to_send);
+#ifdef DEBUG
+				if (ret != HAL_OK) printf("Failed to send response to secondary: %d", ret);
+				break;
+			case MESSAGE_NOT_RECOGNIZED:
+				printf("Failed to recognize message type \'%c\' in \"%s\" from secondary\r\n", stm_buffer_in[0], stm_buffer_in);
+				break;
+			case MESSAGE_PARSING_ISSUE:
+				printf("Failed to parse \"%s\" for message type \'%c\' from secondary\r\n", &stm_buffer_in[1], stm_buffer_in[0]);
+				break;
+			case MESSAGE_RESPONSE_ISSUE:
+				printf("Failed to prepare response to message type \'%c\' for secondary\r\n", stm_buffer_in[0]);
+				break;
+			default:
+				printf("Error %d: processing \"%s\" from secondary\r\n", status, stm_buffer_in);
 #endif
 				break;
 			}
@@ -935,9 +966,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
-  /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
   /* DMA1_Channel7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
