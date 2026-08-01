@@ -29,6 +29,8 @@
 #include "titan_data.h"
 #include "mlx90614.h"
 #include "minmea.h"
+#include "titan_data.h"
+#include "communication.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +64,8 @@ UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 volatile float front_speed_kmph = 0;
@@ -69,8 +73,14 @@ volatile float rear_speed_kmph = 0;
 volatile float mh_z19_co2_ppm = 0;
 
 volatile uint16_t gps_message_length = 0;
+volatile uint16_t rpi_message_length = 0;
+volatile uint16_t stm_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
+
+UART_HandleTypeDef* GPS_UART = &huart1;
+UART_HandleTypeDef* RPI_UART = &huart2;
+UART_HandleTypeDef* STM_UART = &huart5; // Between STMs, board to board
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -149,6 +159,9 @@ int main(void)
 	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
 	printf("\r\n==========================\r\nStarting up TITAN 2026\r\n");
 
+	struct TitanSummary summary;
+	memset(&summary, 0, sizeof(struct TitanSummary));
+
 	// Start timers once everything's initialized properly
 	HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
@@ -185,7 +198,18 @@ int main(void)
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
-	HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+	HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+
+
+	const uint16_t COMMS_BUFFER_SIZE = 64; // Buffer size for data communication buffers
+	char rpi_buffer_in[COMMS_BUFFER_SIZE] = {};
+	char stm_buffer_in[COMMS_BUFFER_SIZE] = {};
+	char radio_buffer_in[COMMS_BUFFER_SIZE] = {};
+	char rpi_buffer_out[COMMS_BUFFER_SIZE] = {};
+	char stm_buffer_out[COMMS_BUFFER_SIZE] = {};
+	char radio_buffer_out[COMMS_BUFFER_SIZE] = {};
+	HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
+	HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
 
   /* USER CODE END 2 */
 
@@ -213,7 +237,9 @@ int main(void)
 
 		ret = atmo_conditions_update(&atmo_cond);
 //		printf("[%d]T: %.2f\tH: %.2f\tP: %.2f\tCO2: %d\n\r", ret, atmo_cond.temperature_c, atmo_cond.humidity_rel, atmo_cond.static_pressure_pa, atmo_cond.co2_ppm);
-
+		if (ret == HAL_OK) {
+			summary.temperature_c = atmo_cond.temperature_c;
+		}
 		float battery_voltage = 0;
 		ina219_read_bus_voltage(PRIM_INA, &battery_voltage);
 		// printf("%.3f V\r\n", battery_voltage);
@@ -235,7 +261,38 @@ int main(void)
 			minmea_process_buffer(gps_buffer, (size_t)gps_message_length, &gps_data);
 			gps_message_length = 0;
 
-			HAL_UARTEx_ReceiveToIdle_IT(&huart1, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+			HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+		}
+
+		uint16_t length_to_send = 0;
+		if (rpi_message_length > 0) {
+			enum MessageStatus status = process_message(&summary, (uint8_t*)rpi_buffer_in, rpi_message_length, (uint8_t*)rpi_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
+			memset(rpi_buffer_in, 0, rpi_message_length);
+			rpi_message_length = 0;
+			HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
+
+			switch (status) {
+			case MESSAGE_PARSED_OK_NO_RESPONSE:
+				break; // No further action needed
+			case MESSAGE_PARSED_OK_SEND_RESPONSE:
+				ret = HAL_UART_Transmit_DMA(RPI_UART, (uint8_t*)rpi_buffer_out, length_to_send);
+#ifdef DEBUG
+				if (ret != HAL_OK) printf("Failed to send response to RPi: %d", ret);
+				break;
+			case MESSAGE_NOT_RECOGNIZED:
+				printf("Failed to recognize message type \'%c\' in \"%s\" from RPi\r\n", rpi_buffer_in[0], rpi_buffer_in);
+				break;
+			case MESSAGE_PARSING_ISSUE:
+				printf("Failed to parse \"%s\" for message type \'%c\' from RPi\r\n", &rpi_buffer_in[1], rpi_buffer_in[0]);
+				break;
+			case MESSAGE_RESPONSE_ISSUE:
+				printf("Failed to prepare response to message type \'%c\' for RPi\r\n", rpi_buffer_in[0]);
+				break;
+			default:
+				printf("Error %d: processing \"%s\" from RPi\r\n", status, rpi_buffer_in);
+#endif
+				break;
+			}
 		}
 	}
   /* USER CODE END 3 */
@@ -878,6 +935,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+  /* DMA1_Channel6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
+  /* DMA1_Channel7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
 
 }
 
@@ -940,34 +1003,6 @@ PUTCHAR_PROTOTYPE
 
   return ch;
 }
-
-#ifdef __cplusplus
-namespace std{
-extern "C"{
-#endif
-int _write(int fd, char *ptr, int len){
-	 (void)fd;
-	 for(int i = 0; i < len; i++){
-		 HAL_UART_Transmit(&huart4, (uint8_t *)ptr++, 1, 0xFFFF);
-	 }
-	 return len;
-}
-
-size_t _read(int fd, char *ptr, size_t len){
-	 (void)fd;
-	 size_t i;
-	 for(i = 0; i < len; i++){
-		 if (HAL_UART_Receive(&huart4, (uint8_t*)ptr++, 1, 0xFFFF) != HAL_OK) break;
-	 }
-	 return i;
-}
-
-#ifdef __cplusplus
-}
-}
-#endif
-
-
 
 inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count) {
 	const float CIRCUMFERENCE_M = 2.136; // Wheel circumference
@@ -1044,7 +1079,9 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-	gps_message_length = Size;  // Number of bytes received in the most recent message
+	if (huart == GPS_UART) gps_message_length = Size;
+	if (huart == RPI_UART) rpi_message_length = Size;
+	if (huart == STM_UART) stm_message_length = Size;
 	// Leave the trigger for the next DMA until after the buffer parsed or copied elsewhere to prevent the current message being lost
 }
 /* USER CODE END 4 */
