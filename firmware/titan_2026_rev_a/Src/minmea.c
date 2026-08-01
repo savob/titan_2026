@@ -701,10 +701,12 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
 		case MINMEA_SENTENCE_RMC: {
 			struct minmea_sentence_rmc frame;
 			if (minmea_parse_rmc(&frame, buffer)) {
-				summary->latitidue_deg = minmea_tocoord(&frame.latitude);
-				summary->longitude_deg = minmea_tocoord(&frame.longitude);
-				summary->speed_kmph = minmea_tocoord(&frame.speed);
 				summary->valid_position = frame.valid;
+                if (summary->valid_position) {
+					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->longitude_deg = minmea_tocoord(&frame.longitude);
+					summary->speed_kmph = minmea_tofloat(&frame.speed);
+                }
 				return true;
 			}
 			else {
@@ -715,9 +717,11 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
 		case MINMEA_SENTENCE_GLL: {
 			struct minmea_sentence_gll frame;
 			if (minmea_parse_gll(&frame, buffer)) {
-				summary->latitidue_deg = minmea_tocoord(&frame.latitude);
-				summary->longitude_deg = minmea_tocoord(&frame.longitude);
 				summary->valid_position = frame.status == 'A';
+                if (summary->valid_position) {
+					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->longitude_deg = minmea_tocoord(&frame.longitude);
+                }
 				return true;
 			}
 			else {
@@ -729,8 +733,11 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
             struct minmea_sentence_gga frame;
             if (minmea_parse_gga(&frame, buffer)) {
                 summary->valid_position = frame.fix_quality != 0 && frame.satellites_tracked > 3;
-                summary->latitidue_deg = minmea_tocoord(&frame.latitude);
-                summary->longitude_deg = minmea_tocoord(&frame.longitude);
+                if (summary->valid_position) {
+					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->longitude_deg = minmea_tocoord(&frame.longitude);
+					summary->altitude_m = minmea_tofloat(&frame.altitude);
+                }
                 return true;
             }
             else {

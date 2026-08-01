@@ -210,6 +210,7 @@ struct GPSSummary {
 	float latitidue_deg;
 	float longitude_deg;
 	float speed_kmph;
+	float altitude_m;
 };
 
 /**
