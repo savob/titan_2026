@@ -68,3 +68,24 @@ There are a multitude changes between the 2022 and 2026 versions of the TITAN bo
 - Introduced solder jumper to set wheel power level after finding the sensors used in 2022 were actually rated for 3.3&nbsp;V, _not 5&nbsp;V!_
 
 These cover all the changes I felt were really needed on TITAN. There was only one change that I would like but couldn't justify: integrating the nRF24L01+LNA radio used for telemetry. It would needlessly take me more time to draw the schematic, spec the parts, and then layout while not meaningfully improving any performance metric while greatly increasing the cost compared to just getting a handful of the preassembled modules online. _I'll put aside the vain desire for a majestic monolithic PCB, for now._
+
+## Issues
+
+These are critical issues with the boards and need attention to fix or address in software or hardware:
+
+- I2C1 seems to knock itself offline about 2 seconds into a new boot. Root cause is unknown at present, although I suspect a chip errata since it works fine for as much activity is desired up to that two second mark. One suggested remedy is to perform a software restart of the I2C peripheral and it's pins when issues are detected - this has yet to be tried.
+- GPS module always reports "ANTENNA OPEN", even with the pin soldered to GND which should cause it report "ANTENNA SHORT" instead. _I hope this is isolated to the module used on my board, I will attempt a replacement soon to see if it is isolated to my unit._
+
+## Potential Improvements
+
+These are some minor changes one should consider if a revision or derivative of this work is considered:
+
+- Brake disk temperature sensors work fine at 3.3&nbsp;V so we can remove that solder selection jumper
+- Change the serial peripheral facing the secondary system from a UART to a USART so it can make use of DMA receives and transmits
+- Add a solder jumper to connect the STM32 to RPi RX so we can ensure that the STM32 secondary board MCU doesn't contest the signal coming from the primary board
+- Integrate nRF24 radio circuitry onto PCB
+- Change the board so the INA219 is always connected to the STM32 on board, with some knockon changes:
+  - No need for the solder jumpers on that I2C line
+  - This removes the need for an I2C isolator system, simplifying the isolation requirements
+  - The STM32 will always need to be active so the RPi serial line will connect via it to the other board
+  - Secondary STM32 will need to poll the INA219 regularly and share that with the primary system
