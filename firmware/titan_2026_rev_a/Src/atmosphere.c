@@ -35,8 +35,12 @@ HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms) {
 	bme280_interface.address = BME280_ADDRESS;
 
 	uint8_t bme_init = bme280_init(&dev_bme280);
-	printf("BME280 setup result: %d\n\r", bme_init);
-	if (bme_init < 0) any_error = true;
+	if (bme_init < 0) {
+#ifdef DEBUG
+		printf("BME280 setup issue: %d. Further BME280 configuration skipped.\n\r", bme_init);
+#endif
+		any_error = true;
+	}
 	else {
 		// Only bother with setup if chip initialized ok
 		struct bme280_settings settings = {
@@ -47,11 +51,19 @@ HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms) {
 				.standby_time= BME280_STANDBY_TIME_0_5_MS,
 		};
 		bme_init = bme280_set_sensor_settings(BME280_SEL_ALL_SETTINGS, &settings, &dev_bme280);
-		printf("BME280 settings result: %d\n\r", bme_init);
-		if (bme_init < 0) any_error = true;
+		if (bme_init < 0) {
+#ifdef DEBUG
+			printf("BME280 settings issue: %d\n\r", bme_init);
+#endif
+			any_error = true;
+		}
 		bme_init = bme280_set_sensor_mode(BME280_POWERMODE_NORMAL, &dev_bme280);
-		printf("BME280 mode result: %d\n\r", bme_init);
-		if (bme_init < 0) any_error = true;
+		if (bme_init < 0) {
+#ifdef DEBUG
+			printf("BME280 mode issue: %d\n\r", bme_init);
+#endif
+			any_error = true;
+		}
 	}
 
 	if (any_error) return HAL_ERROR;
@@ -65,11 +77,15 @@ HAL_StatusTypeDef atmo_conditions_update(struct AtmoConditions* target) {
     int8_t ret_bme280 = bme280_get_sensor_data(BME280_ALL, &bme_data, &dev_bme280);
     if (ret_bme280 != BME280_OK) {
     	if (ret_bme280 < 0) {
-    		printf("BME280 read error: %d", ret_bme280);
+#ifdef DEBUG
+    		printf("BME280 read error: %d\r\n", ret_bme280);
+#endif
     		any_error = true;
 			return HAL_ERROR;
     	}
-    	else printf("BME280 read warning: %d", ret_bme280);
+#ifdef DEBUG
+    	else printf("BME280 read warning: %d\r\n", ret_bme280);
+#endif
     }
 	target->humidity_rel = bme_data.humidity;
 	target->static_pressure_pa = bme_data.pressure;
