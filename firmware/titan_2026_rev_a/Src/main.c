@@ -77,7 +77,7 @@ volatile uint16_t stm_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 
-volatile struct TitanSummary summary;
+volatile struct TitanSummary summary = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -135,7 +135,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-	memset(&summary, 0, sizeof(struct TitanSummary)); // Ensure summary is zeroed before starting
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -205,6 +205,7 @@ int main(void)
 			.name = "GPS",
 			.buffer_in = gps_buffer,
 			.buffer_in_length = GPS_BUFFER_SIZE,
+			.available_bytes_to_read = &gps_message_length,
 			.buffer_out = gps_buffer,
 			.buffer_out_length = GPS_BUFFER_SIZE,
 			.type = INTERFACE_UART_GPS,
@@ -213,19 +214,34 @@ int main(void)
 			.uart = &GPS_UART
 	};
 
+	struct CommunicationInterface primary = { // GPS should never send so don't bother much with it
+			.name = "primary",
+			.buffer_in = rpi_buffer_in,
+			.buffer_in_length = COMMS_BUFFER_SIZE,
+			.available_bytes_to_read = &rpi_message_length,
+			.buffer_out = rpi_buffer_out,
+			.buffer_out_length = COMMS_BUFFER_SIZE,
+			.type = INTERFACE_UART_TITAN,
+			.prime_read_function = HAL_UARTEx_ReceiveToIdle_IT,
+			.send_function = HAL_UART_Transmit_DMA,
+			.uart = &PRIM_UART
+	};
+
+	struct CommunicationInterface secondary = { // GPS should never send so don't bother much with it
+			.name = "secondary",
+			.buffer_in = stm_buffer_in,
+			.buffer_in_length = COMMS_BUFFER_SIZE,
+			.available_bytes_to_read = &stm_message_length,
+			.buffer_out = stm_buffer_out,
+			.buffer_out_length = COMMS_BUFFER_SIZE,
+			.type = INTERFACE_UART_TITAN,
+			.prime_read_function = HAL_UARTEx_ReceiveToIdle_IT,
+			.send_function = HAL_UART_Transmit_IT,
+			.uart = &SEC_UART
+	};
 	ret = setup_interface(&gps);
-
-	ret = HAL_UARTEx_ReceiveToIdle_IT(&PRIM_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
-	if (ret != HAL_OK) {
-		printf("Failed to start primary input buffer %d\n\r", ret);
-		Error_Handler();
-	}
-	ret = HAL_UARTEx_ReceiveToIdle_IT(&SEC_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
-	if (ret != HAL_OK) {
-		printf("Failed to start secondary input buffer %d\n\r", ret);
-		Error_Handler();
-	}
-
+	ret = setup_interface(&primary);
+	ret = setup_interface(&secondary);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -271,67 +287,10 @@ int main(void)
 		}
 #endif
 
-		ret = operate_interface(&gps, &gps_message_length, &summary);
+		ret = operate_interface(&gps, &summary);
+		ret = operate_interface(&primary, &summary);
+		ret = operate_interface(&secondary, &summary);
 
-		uint16_t length_to_send = 0;
-		if (rpi_message_length > 0) {
-			enum MessageStatus status = process_message(&summary, (uint8_t*)rpi_buffer_in, rpi_message_length, (uint8_t*)rpi_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
-			memset(rpi_buffer_in, 0, rpi_message_length);
-			rpi_message_length = 0;
-			HAL_UARTEx_ReceiveToIdle_IT(&PRIM_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
-
-			switch (status) {
-			case MESSAGE_PARSED_OK_NO_RESPONSE:
-				break; // No further action needed
-			case MESSAGE_PARSED_OK_SEND_RESPONSE:
-				ret = HAL_UART_Transmit_DMA(&PRIM_UART, (uint8_t*)rpi_buffer_out, length_to_send);
-#ifdef DEBUG
-				if (ret != HAL_OK) printf("Failed to send response to primary: %d", ret);
-				break;
-			case MESSAGE_NOT_RECOGNIZED:
-				printf("Failed to recognize message type \'%c\' in \"%s\" from primary\r\n", rpi_buffer_in[0], rpi_buffer_in);
-				break;
-			case MESSAGE_PARSING_ISSUE:
-				printf("Failed to parse \"%s\" for message type \'%c\' from primary\r\n", &rpi_buffer_in[1], rpi_buffer_in[0]);
-				break;
-			case MESSAGE_RESPONSE_ISSUE:
-				printf("Failed to prepare response to message type \'%c\' for primary\r\n", rpi_buffer_in[0]);
-				break;
-			default:
-				printf("Error %d: processing \"%s\" from primary\r\n", status, rpi_buffer_in);
-#endif
-				break;
-			}
-		}
-		if (stm_message_length > 0) {
-			enum MessageStatus status = process_message(&summary, (uint8_t*)stm_buffer_in, stm_message_length, (uint8_t*)stm_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
-			memset(stm_buffer_in, 0, stm_message_length);
-			stm_message_length = 0;
-			HAL_UARTEx_ReceiveToIdle_IT(&SEC_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
-
-			switch (status) {
-			case MESSAGE_PARSED_OK_NO_RESPONSE:
-				break; // No further action needed
-			case MESSAGE_PARSED_OK_SEND_RESPONSE:
-				ret = HAL_UART_Transmit_IT(&SEC_UART, (uint8_t*)stm_buffer_out, length_to_send);
-#ifdef DEBUG
-				if (ret != HAL_OK) printf("Failed to send response to secondary: %d", ret);
-				break;
-			case MESSAGE_NOT_RECOGNIZED:
-				printf("Failed to recognize message type \'%c\' in \"%s\" from secondary\r\n", stm_buffer_in[0], stm_buffer_in);
-				break;
-			case MESSAGE_PARSING_ISSUE:
-				printf("Failed to parse \"%s\" for message type \'%c\' from secondary\r\n", &stm_buffer_in[1], stm_buffer_in[0]);
-				break;
-			case MESSAGE_RESPONSE_ISSUE:
-				printf("Failed to prepare response to message type \'%c\' for secondary\r\n", stm_buffer_in[0]);
-				break;
-			default:
-				printf("Error %d: processing \"%s\" from secondary\r\n", status, stm_buffer_in);
-#endif
-				break;
-			}
-		}
 	}
   /* USER CODE END 3 */
 }

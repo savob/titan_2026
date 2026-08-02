@@ -25,6 +25,8 @@ struct CommunicationInterface {
 
 	char* buffer_in;
 	uint16_t buffer_in_length;
+	volatile uint16_t* available_bytes_to_read;
+
 	char* buffer_out;
 	uint16_t buffer_out_length;
 
@@ -36,5 +38,5 @@ struct CommunicationInterface {
 enum MessageStatus process_message(volatile struct TitanSummary* summary, const uint8_t msg_in[], const uint8_t msg_in_length, uint8_t msg_out[], uint8_t msg_out_buf_size, uint16_t* length_to_send);
 
 HAL_StatusTypeDef setup_interface(struct CommunicationInterface* interface);
-HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, volatile uint16_t* bytes_received, volatile struct TitanSummary* summary);
+HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, volatile struct TitanSummary* summary);
 #endif

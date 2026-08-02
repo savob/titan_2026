@@ -414,8 +414,8 @@ HAL_StatusTypeDef setup_interface(struct CommunicationInterface* interface) {
 	return ret;
 }
 
-HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, volatile uint16_t* bytes_received, volatile struct TitanSummary* summary) {
-	if (*bytes_received == 0) return HAL_OK;
+HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, volatile struct TitanSummary* summary) {
+	if (*interface->available_bytes_to_read == 0) return HAL_OK;
 
 	uint16_t length_to_send;
 
@@ -423,10 +423,10 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 
 	switch (interface->type) {
 	case INTERFACE_UART_TITAN:
-		status = process_message(&summary, (uint8_t*)interface->buffer_in, *bytes_received, (uint8_t*)interface->buffer_out, interface->buffer_out_length, &length_to_send);
+		status = process_message(summary, (uint8_t*)interface->buffer_in, *interface->available_bytes_to_read, (uint8_t*)interface->buffer_out, interface->buffer_out_length, &length_to_send);
 		break;
 	case INTERFACE_UART_GPS:
-		if (minmea_process_buffer(interface->buffer_in, (size_t)*bytes_received, &summary->gps)) {
+		if (minmea_process_buffer(interface->buffer_in, (size_t)*interface->available_bytes_to_read, (struct GPSState*) &(summary->gps))) {
 			status = MESSAGE_PARSED_OK_NO_RESPONSE;
 		}
 		else status = MESSAGE_PARSING_ISSUE;
@@ -436,8 +436,8 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 	}
 
 	// Clear received buffer and immediately reattempt receiving
-	memset(interface->buffer_in, 0, *bytes_received);
-	*bytes_received = 0;
+	memset(interface->buffer_in, 0, *interface->available_bytes_to_read);
+	*interface->available_bytes_to_read = 0;
 
 	HAL_StatusTypeDef ret = HAL_ERROR; // Ensure we try once
 	int attempts;
@@ -455,6 +455,7 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 	case MESSAGE_PARSED_OK_NO_RESPONSE:
 		return HAL_OK; // No further action needed
 	case MESSAGE_PARSED_OK_SEND_RESPONSE:
+		ret = HAL_ERROR; // Ensure we attempt a TX
 		for (attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
 			ret = interface->send_function(interface->uart, (uint8_t*)interface->buffer_out, length_to_send);
 			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
