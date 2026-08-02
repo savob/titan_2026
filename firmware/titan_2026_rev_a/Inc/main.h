@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "titan_data.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -57,6 +57,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 HAL_StatusTypeDef setup_battery_monitoring(I2C_HandleTypeDef* bus, uint32_t timeout);
 HAL_StatusTypeDef read_battery_level(int8_t* primary_soc, int8_t* secondary_soc);
+void summarize_wheel_data(volatile struct TitanSummary* summary);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

@@ -260,6 +260,8 @@ int main(void)
 		}
 #endif
 
+		summarize_wheel_data(&summary);
+
 		ret = operate_interface(&gps, &summary);
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
