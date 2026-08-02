@@ -75,10 +75,6 @@ union INA219ConfigReg {
 
 static enum INA219RegAdd last_reg_pointed_to = INA_REG_INVALID; // Used to speed up repeated reads
 
-// Must be left shifted before use in I2C HAL
-const uint8_t PRIM_INA = 0x40 << 1; // Address for primary board's INA219
-const uint8_t SEC_INA = 0x44 << 1;	// Address for secondary board's INA219
-
 static I2C_HandleTypeDef* ina219_i2c;
 static uint32_t ina219_timeout = 1000;
 static float current_lsb_a = 0; // Calculated value of current per LSB in register

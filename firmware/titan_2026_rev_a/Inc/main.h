@@ -55,7 +55,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+HAL_StatusTypeDef setup_battery_monitoring(I2C_HandleTypeDef* bus, uint32_t timeout);
+HAL_StatusTypeDef read_battery_level(int8_t* primary_soc, int8_t* secondary_soc);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

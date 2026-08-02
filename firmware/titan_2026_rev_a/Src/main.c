@@ -23,7 +23,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
-#include "ina219.h"
 #include "atmosphere.h"
 #include "scd4x.h"
 #include "titan_data.h"
@@ -167,10 +166,8 @@ int main(void)
 	HAL_TIM_IC_Start_IT(&CO2_TIMER, TIM_CHANNEL_2);
 	HAL_TIM_OC_Start_IT(&CO2_TIMER, TIM_CHANNEL_3);
 
-	HAL_StatusTypeDef ret = ina219_setup(PRIM_INA, &MAIN_I2C, I2C_TIMEOUT);
-	printf("Primary INA219 setup result: %d\n\r", ret);
-	ret = ina219_setup(SEC_INA, &MAIN_I2C, I2C_TIMEOUT);
-	printf("Secondary INA219 setup result: %d\n\r", ret);
+	HAL_StatusTypeDef ret;
+	ret = setup_battery_monitoring(&MAIN_I2C, I2C_TIMEOUT);
 
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
 
@@ -272,9 +269,8 @@ int main(void)
 		if (ret == HAL_OK) {
 			summary.temperature_c = atmo_cond.temperature_c;
 		}
-		float battery_voltage = 0;
-		ina219_read_bus_voltage(PRIM_INA, &battery_voltage);
-		// printf("%.3f V\r\n", battery_voltage);
+
+		ret = read_battery_level((int8_t*)&summary.primary_battery_soc, (int8_t*)&summary.secondary_battery_soc);
 
 		float temp_temp;
 		ret = mlx_read_object_temperature_deg_c(front_brake, &temp_temp);
