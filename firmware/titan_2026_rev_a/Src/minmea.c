@@ -710,7 +710,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
 				return true;
 			}
 			else {
-				printf("$xxRMC sentence is not parsed\n");
+				printf("$xxRMC sentence failed to parsed\n");
 			}
 		} break;
 
@@ -725,7 +725,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
 				return true;
 			}
 			else {
-				printf("$xxRMC sentence is not parsed\n");
+				printf("$xxRMC sentence failed to parsed\n");
 			}
 		} break;
 
@@ -741,7 +741,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
                 return true;
             }
             else {
-                printf("$xxGGA sentence is not parsed\n");
+                printf("$xxGGA sentence failed to parsed\n");
             }
         } break;
 
@@ -752,7 +752,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
                 return true;
            }
            else {
-                printf("$xxTXT sentence is not parsed\n");
+                printf("$xxTXT sentence failed to parsed\n");
            }
         } break;
 
