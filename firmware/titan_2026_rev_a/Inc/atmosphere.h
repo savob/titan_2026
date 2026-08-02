@@ -14,6 +14,6 @@
 
 HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms);
 
-HAL_StatusTypeDef atmo_conditions_update(struct AtmoConditions* target);
+HAL_StatusTypeDef atmo_conditions_update(struct TitanSummary* target, uint16_t mh_z19_co2_ppm);
 
 #endif /* INC_ATMOSPHERE_H_ */

@@ -24,8 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "atmosphere.h"
-#include "scd4x.h"
-#include "titan_data.h"
 #include "mlx90614.h"
 #include "minmea.h"
 #include "titan_data.h"
@@ -171,10 +169,7 @@ int main(void)
 
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
 
-	ret = scd4x_setup(&MAIN_I2C, I2C_TIMEOUT);
-	const bool SCD_AVAILABLE = ret == HAL_OK;
-	if (ret == HAL_OK) printf("SCD41 setup success\n\r");
-	else printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret);
+
 
 	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
 	struct MLXDevice front_brake = {
@@ -249,26 +244,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		struct AtmoConditions atmo_cond = {0};
 
-		// Gather combined CO2 reading
-		if (SCD_AVAILABLE) {
-			HAL_StatusTypeDef ret_scd4x = HAL_OK;
-			ret_scd4x = scd4x_read_co2(&atmo_cond.co2_ppm);
-			if (ret_scd4x != HAL_OK) {
-				printf("CO2 update issue: %d\n\r", ret_scd4x);
-			}
-		}
-		if (mh_z19_co2_ppm > 0) { // Include MH sensor reading too if valid
-			if (atmo_cond.co2_ppm <= 0) atmo_cond.co2_ppm = (uint16_t)mh_z19_co2_ppm;
-			else atmo_cond.co2_ppm = (atmo_cond.co2_ppm + (uint16_t)mh_z19_co2_ppm) / 2;
-		}
-
-		ret = atmo_conditions_update(&atmo_cond);
-//		printf("[%d]T: %.2f\tH: %.2f\tP: %.2f\tCO2: %d\n\r", ret, atmo_cond.temperature_c, atmo_cond.humidity_rel, atmo_cond.static_pressure_pa, atmo_cond.co2_ppm);
-		if (ret == HAL_OK) {
-			summary.temperature_c = atmo_cond.temperature_c;
-		}
+		ret = atmo_conditions_update((struct TitanSummary*) &summary, (uint16_t) mh_z19_co2_ppm);
 
 		ret = read_battery_level((int8_t*)&summary.primary_battery_soc, (int8_t*)&summary.secondary_battery_soc);
 
