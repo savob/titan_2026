@@ -74,7 +74,28 @@ These cover all the changes I felt were really needed on TITAN. There was only o
 These are critical issues with the boards and need attention to fix or address in software or hardware:
 
 - I2C1 seems to knock itself offline about 2 seconds into a new boot. Root cause is unknown at present, although I suspect a chip errata since it works fine for as much activity is desired up to that two second mark. One suggested remedy is to perform a software restart of the I2C peripheral and it's pins when issues are detected - this has yet to be tried.
-- GPS module always reports "ANTENNA OPEN", even with the pin soldered to GND which should cause it report "ANTENNA SHORT" instead. _I hope this is isolated to the module used on my board, I will attempt a replacement soon to see if it is isolated to my unit._
+
+### GPS Antenna Network Failure
+
+GPS antenna network routing has issues. This causes the on board GPS module always reports "ANTENNA OPEN" even with an antenna connected or a short to GND. **To work around this issues, an off board module with a separate antenna connection should be soldered in place of the onboard one and use its RX/TX lines.**
+
+Should another revision be made the following steps should be taken to hopefully address this:
+
+- Add via stitching for GPS signal line from antenna to module
+- Remove sharp routing bends
+- Do not break return path (GND) underneith the GPS signal line
+- Move the GPS module more north on the PCB to afford more space for nicer routing
+- Choose trace width for a 50&nbsp;Ohm impedance in the final stackup used
+- Change components on antenna line to match exactly with known good ones:
+  - 6.8&nbsp;nH inductor: Murata LQG15HS6N8J02D
+  - 470&nbsp;pH capactior: FH 0402CG471J500NT
+  - Connector _(optional, but best to avoid discrepancies)_: BAT Wireless BWU.FL-IPEX1
+
+Below is a figure of the known good reference layout used in another design.
+
+![Known good GPS layout for reference](./gps_routing_known_good.png)
+
+_This is the first time I've had such issues with radio work so I'm quite dissappointed in this outcome._
 
 ## Potential Improvements
 
