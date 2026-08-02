@@ -69,8 +69,6 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-volatile float front_speed_kmph = 0;
-volatile float rear_speed_kmph = 0;
 volatile float mh_z19_co2_ppm = 0;
 
 volatile uint16_t gps_message_length = 0;
@@ -79,6 +77,7 @@ volatile uint16_t stm_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 
+volatile struct TitanSummary summary;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -136,7 +135,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+	memset(&summary, 0, sizeof(struct TitanSummary)); // Ensure summary is zeroed before starting
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -158,9 +157,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
 	printf("\r\n==========================\r\nStarting up TITAN 2026\r\n");
-
-	struct TitanSummary summary;
-	memset(&summary, 0, sizeof(struct TitanSummary));
 
 	// Start timers once everything's initialized properly
 	HAL_TIM_IC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_1);
@@ -1069,16 +1065,22 @@ PUTCHAR_PROTOTYPE
   return ch;
 }
 
-inline static float calculate_wheel_speed_kmph(uint32_t capture_period_count) {
+inline static void update_wheel_status(volatile struct WheelStatus* status, uint32_t capture_period_count) {
 	const float CIRCUMFERENCE_M = 2.136; // Wheel circumference
-	const float SPOKES = 6.0; // The number of spokes (counts) per complete wheel rotation
+	const uint8_t SPOKES = 6; // The number of spokes (counts) per complete wheel rotation
 	const float US_PER_COUNT = 3.0; // The number of microseconds per clock tick
 
-	const float COUNT_TO_KM_P_H = 3600000.0 * CIRCUMFERENCE_M / (SPOKES * US_PER_COUNT); // Divide this by period in count to get speed in km/h
+	const float COUNT_TO_KM_P_H = 3600000.0 * CIRCUMFERENCE_M / ((float)SPOKES * US_PER_COUNT); // Divide this by period in count to get speed in km/h
 
 	float speed_km_p_h = COUNT_TO_KM_P_H / (float)(capture_period_count);
 
-	return speed_km_p_h;
+	status->speed_kmph = speed_km_p_h;
+
+	status->spoke++;
+	if (status->spoke >= SPOKES) {
+		status->spoke = 0;
+		status->rotations++;
+	}
 }
 
 inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count) {
@@ -1110,11 +1112,11 @@ inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
 	if (htim->Instance == REAR_ENC_TIMER.Instance) {
-		rear_speed_kmph = calculate_wheel_speed_kmph(captured_value);
+		update_wheel_status(&summary.rear_wheel, captured_value);
 		return;
 	}
 	if (htim->Instance == FRONT_ENC_TIMER.Instance) {
-		front_speed_kmph = calculate_wheel_speed_kmph(captured_value);
+		update_wheel_status(&summary.front_wheel, captured_value);
 		return;
 	}
 
@@ -1127,13 +1129,13 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 }
 
 void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
-	// On a timeout we've probably stopped, doesn't seem to work for either timer currently
+	// On a timeout we've probably stopped
 	if (htim->Instance == REAR_ENC_TIMER.Instance) {
-		rear_speed_kmph = 0;
+		summary.rear_wheel.speed_kmph = 0;
 		return;
 	}
 	if (htim->Instance == FRONT_ENC_TIMER.Instance) {
-		front_speed_kmph = 0;
+		summary.front_wheel.speed_kmph = 0;
 		return;
 	}
 	if (htim->Instance == CO2_TIMER.Instance) {

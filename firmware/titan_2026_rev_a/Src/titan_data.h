@@ -20,6 +20,7 @@ struct WheelStatus {
 	float speed_kmph;
 	float brake_disk_temperature_c;
 	uint16_t rotations;
+	uint_fast8_t spoke; // Which spoke it is currently on (partial rotation
 };
 
 struct GPSData {
