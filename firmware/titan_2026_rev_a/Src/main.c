@@ -194,17 +194,27 @@ int main(void)
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
-	ret = HAL_UARTEx_ReceiveToIdle_IT(&GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
-	if (ret != HAL_OK) {
-		printf("Failed to start GPS input buffer %d\n\r", ret);
-		Error_Handler();
-	}
 
 	const uint16_t COMMS_BUFFER_SIZE = 64; // Buffer size for data communication buffers
 	char rpi_buffer_in[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_in[COMMS_BUFFER_SIZE] = {};
 	char rpi_buffer_out[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_out[COMMS_BUFFER_SIZE] = {};
+
+	struct CommunicationInterface gps = { // GPS should never send so don't bother much with it
+			.name = "GPS",
+			.buffer_in = gps_buffer,
+			.buffer_in_length = GPS_BUFFER_SIZE,
+			.buffer_out = gps_buffer,
+			.buffer_out_length = GPS_BUFFER_SIZE,
+			.type = INTERFACE_UART_GPS,
+			.prime_read_function = HAL_UARTEx_ReceiveToIdle_IT,
+			.send_function = HAL_UART_Transmit_IT,
+			.uart = &GPS_UART
+	};
+
+	ret = setup_interface(&gps);
+
 	ret = HAL_UARTEx_ReceiveToIdle_IT(&PRIM_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
 	if (ret != HAL_OK) {
 		printf("Failed to start primary input buffer %d\n\r", ret);
@@ -260,15 +270,8 @@ int main(void)
 			// printf("Error %d with MLX read\r\n", ret);
 		}
 #endif
-		if (gps_message_length > 0) {
-			if (gps_message_length < GPS_BUFFER_SIZE) gps_buffer[gps_message_length] = '\0'; // Null terminate buffer for potential printing
 
-			struct GPSSummary gps_data;
-			minmea_process_buffer(gps_buffer, (size_t)gps_message_length, &gps_data);
-			gps_message_length = 0;
-
-			HAL_UARTEx_ReceiveToIdle_IT(&GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
-		}
+		ret = operate_interface(&gps, &gps_message_length, &summary);
 
 		uint16_t length_to_send = 0;
 		if (rpi_message_length > 0) {

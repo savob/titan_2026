@@ -1,11 +1,14 @@
 #ifndef INC_TITAN_DATA_H_
 #define INC_TITAN_DATA_H_
 
+#include <stdbool.h>
+
 struct GPSState{
     float altitude_m;
     float latitude_deg;
     float longitude_deg;
-    float speed_m_s;
+    bool valid_position;
+    float speed_kmph;
 };
 
 struct AtmoConditions {

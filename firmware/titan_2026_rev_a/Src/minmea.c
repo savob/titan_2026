@@ -696,14 +696,14 @@ int minmea_gettime(struct timespec *ts, const struct minmea_date *date, const st
     }
 }
 
-static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* summary) {
+static bool process_gps_string(char buffer[], size_t length, struct GPSState* summary) {
     switch (minmea_sentence_id(buffer, true)) {
 		case MINMEA_SENTENCE_RMC: {
 			struct minmea_sentence_rmc frame;
 			if (minmea_parse_rmc(&frame, buffer)) {
 				summary->valid_position = frame.valid;
                 if (summary->valid_position) {
-					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->latitude_deg = minmea_tocoord(&frame.latitude);
 					summary->longitude_deg = minmea_tocoord(&frame.longitude);
 					summary->speed_kmph = minmea_tofloat(&frame.speed);
                 }
@@ -719,7 +719,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
 			if (minmea_parse_gll(&frame, buffer)) {
 				summary->valid_position = frame.status == 'A';
                 if (summary->valid_position) {
-					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->latitude_deg = minmea_tocoord(&frame.latitude);
 					summary->longitude_deg = minmea_tocoord(&frame.longitude);
                 }
 				return true;
@@ -734,7 +734,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
             if (minmea_parse_gga(&frame, buffer)) {
                 summary->valid_position = frame.fix_quality != 0 && frame.satellites_tracked > 3;
                 if (summary->valid_position) {
-					summary->latitidue_deg = minmea_tocoord(&frame.latitude);
+					summary->latitude_deg = minmea_tocoord(&frame.latitude);
 					summary->longitude_deg = minmea_tocoord(&frame.longitude);
 					summary->altitude_m = minmea_tofloat(&frame.altitude);
                 }
@@ -770,7 +770,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSSummary* 
     return false;
 }
 
-bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSSummary* summary) {
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSState* summary) {
 	bool all_parsed_ok = true;
 
 	for (size_t i = 0; i < BUFFER_LENGTH;) {

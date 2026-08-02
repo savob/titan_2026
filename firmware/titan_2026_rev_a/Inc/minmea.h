@@ -26,6 +26,8 @@ extern "C" {
 #define MINMEA_MAX_SENTENCE_LENGTH 80
 #endif
 
+#include "titan_data.h"
+
 enum minmea_sentence_id {
     MINMEA_INVALID = -1,
     MINMEA_UNKNOWN = 0,
@@ -205,13 +207,6 @@ struct minmea_sentence_txt {
     char message[64];
 };
 
-struct GPSSummary {
-	bool valid_position;
-	float latitidue_deg;
-	float longitude_deg;
-	float speed_kmph;
-	float altitude_m;
-};
 
 /**
  * Calculate raw sentence checksum. Does not check sentence integrity.
@@ -334,7 +329,7 @@ static inline bool minmea_isfield(char c) {
  * Process a buffer containing potentially multiple NMEA messages to update a summary of GPS data
  * Returns true if parsed entirely successfully, false if any issue was encountered
  */
-bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSSummary* summary);
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSState* summary);
 
 #ifdef __cplusplus
 }

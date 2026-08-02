@@ -1,5 +1,7 @@
 #include "titan_data.h"
 #include "communication.h"
+#include "main.h"
+#include "minmea.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -29,6 +31,8 @@ struct bulkDataStruct {
 };
 
 static uint8_t LENGTH_CHARACTER_OFFSET = 31; // Basically shift non-zero values into ASCII printable character range, hold over from early days
+static const uint8_t ATTEMPT_LIMIT = 3;
+static const uint8_t ATTEMPT_PERIOD_MS = 3;
 
 static uint8_t msg_length_to_bus(uint8_t length) {
 	uint16_t temp = length + LENGTH_CHARACTER_OFFSET;
@@ -59,7 +63,7 @@ static float humidity_from_message(uint8_t humidity_message) {
 	return (temp / 2.0);
 }
 
-enum MessageStatus process_message(struct TitanSummary* summary, const uint8_t msg_in[], const uint8_t msg_in_length, uint8_t msg_out[], uint8_t msg_out_buf_size, uint16_t* length_to_send) {
+enum MessageStatus process_message(volatile struct TitanSummary* summary, const uint8_t msg_in[], const uint8_t msg_in_length, uint8_t msg_out[], uint8_t msg_out_buf_size, uint16_t* length_to_send) {
 	/* Gets in a value for which line to process, then processes it.
 	Requests characters are lowercase, setting is uppercase
 	All floating point values are presented to four decimal points or less
@@ -382,4 +386,99 @@ enum MessageStatus process_message(struct TitanSummary* summary, const uint8_t m
 	return MESSAGE_PARSED_OK_NO_RESPONSE;
 }
 
+HAL_StatusTypeDef setup_interface(struct CommunicationInterface* interface) {
+	HAL_StatusTypeDef ret = HAL_ERROR;
 
+
+	switch (interface->type) {
+	case INTERFACE_UART_GPS:
+	case INTERFACE_UART_TITAN:
+		int attempts = 0;
+		for (; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
+			ret = interface->prime_read_function(interface->uart, (uint8_t*)interface->buffer_in, interface->buffer_in_length);
+			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
+		}
+
+		if (ret != HAL_OK) {
+			printf("Failed to start %s input buffer error code: %d\n\r", interface->name, ret);
+			Error_Handler();
+		}
+		else if (attempts > 1){
+			printf("Took %d attempts to start RX on %s\n\r", attempts, interface->name);
+		}
+		break;
+	default:
+		return HAL_ERROR; // Unimplemented
+	}
+
+	return ret;
+}
+
+HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, volatile uint16_t* bytes_received, volatile struct TitanSummary* summary) {
+	if (*bytes_received == 0) return HAL_OK;
+
+	uint16_t length_to_send;
+
+	enum MessageStatus status = MESSAGE_PARSED_OK_NO_RESPONSE;
+
+	switch (interface->type) {
+	case INTERFACE_UART_TITAN:
+		status = process_message(&summary, (uint8_t*)interface->buffer_in, *bytes_received, (uint8_t*)interface->buffer_out, interface->buffer_out_length, &length_to_send);
+		break;
+	case INTERFACE_UART_GPS:
+		if (minmea_process_buffer(interface->buffer_in, (size_t)*bytes_received, &summary->gps)) {
+			status = MESSAGE_PARSED_OK_NO_RESPONSE;
+		}
+		else status = MESSAGE_PARSING_ISSUE;
+		break;
+	default:
+		return HAL_ERROR; // Unhandled
+	}
+
+	// Clear received buffer and immediately reattempt receiving
+	memset(interface->buffer_in, 0, *bytes_received);
+	*bytes_received = 0;
+
+	HAL_StatusTypeDef ret = HAL_ERROR; // Ensure we try once
+	int attempts;
+	for (attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
+		ret = interface->prime_read_function(interface->uart, (uint8_t*)interface->buffer_in, interface->buffer_in_length);
+		if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
+	}
+	if (ret != HAL_OK) {
+		printf("Failed to start %s input buffer. Error code: %d\n\r", interface->name, ret);
+		Error_Handler(); // Not restarting RX is critical
+	}
+
+
+	switch (status) {
+	case MESSAGE_PARSED_OK_NO_RESPONSE:
+		return HAL_OK; // No further action needed
+	case MESSAGE_PARSED_OK_SEND_RESPONSE:
+		for (attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
+			ret = interface->send_function(interface->uart, (uint8_t*)interface->buffer_out, length_to_send);
+			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
+		}
+#ifndef DEBUG
+		return ret;
+#else
+		if (ret != HAL_OK) {
+			printf("Failed to send %s output buffer error code: %d\n\r", interface->name, ret);
+		}
+		return ret;
+	case MESSAGE_NOT_RECOGNIZED:
+		printf("Failed to recognize message type \'%c\' in \"%s\" from %s\r\n", interface->buffer_in[0], interface->buffer_in, interface->name);
+		return HAL_ERROR;
+	case MESSAGE_PARSING_ISSUE:
+		printf("Failed to parse \"%s\" for message type \'%c\' from %s\r\n", &interface->buffer_in[1], interface->buffer_in[0], interface->name);
+		return HAL_ERROR;
+	case MESSAGE_RESPONSE_ISSUE:
+		printf("Failed to prepare response to message type \'%c\' for %s\r\n", interface->buffer_in[0], interface->name);
+		return HAL_ERROR;
+	default:
+		printf("Error %d: processing \"%s\" from %s\r\n", status, interface->buffer_in, interface->name);
+		return HAL_ERROR;
+#endif
+	}
+	return ret;
+}
