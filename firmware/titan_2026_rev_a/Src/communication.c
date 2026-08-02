@@ -426,7 +426,7 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 		status = process_message(summary, (uint8_t*)interface->buffer_in, *interface->available_bytes_to_read, (uint8_t*)interface->buffer_out, interface->buffer_out_length, &length_to_send);
 		break;
 	case INTERFACE_UART_GPS:
-		if (minmea_process_buffer(interface->buffer_in, (size_t)*interface->available_bytes_to_read, (struct GPSState*) &(summary->gps))) {
+		if (minmea_process_buffer(interface->buffer_in, (size_t)*interface->available_bytes_to_read, &(summary->gps))) {
 			status = MESSAGE_PARSED_OK_NO_RESPONSE;
 		}
 		else status = MESSAGE_PARSING_ISSUE;
@@ -462,6 +462,8 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 		}
 #ifndef DEBUG
 		return ret;
+	default:
+		return HAL_ERROR;
 #else
 		if (ret != HAL_OK) {
 			printf("Failed to send %s output buffer error code: %d\n\r", interface->name, ret);

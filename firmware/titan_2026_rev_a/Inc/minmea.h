@@ -329,7 +329,7 @@ static inline bool minmea_isfield(char c) {
  * Process a buffer containing potentially multiple NMEA messages to update a summary of GPS data
  * Returns true if parsed entirely successfully, false if any issue was encountered
  */
-bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSState* summary);
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSData* summary);
 
 #ifdef __cplusplus
 }

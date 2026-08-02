@@ -696,7 +696,7 @@ int minmea_gettime(struct timespec *ts, const struct minmea_date *date, const st
     }
 }
 
-static bool process_gps_string(char buffer[], size_t length, struct GPSState* summary) {
+static bool process_gps_string(char buffer[], size_t length, struct GPSData* summary) {
     switch (minmea_sentence_id(buffer, true)) {
 		case MINMEA_SENTENCE_RMC: {
 			struct minmea_sentence_rmc frame;
@@ -770,7 +770,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSState* su
     return false;
 }
 
-bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSState* summary) {
+bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSData* summary) {
 	bool all_parsed_ok = true;
 
 	for (size_t i = 0; i < BUFFER_LENGTH;) {

@@ -1,27 +1,59 @@
-#ifndef INC_TITAN_DATA_H_
-#define INC_TITAN_DATA_H_
+/*
+ * titan_data.h
+ *
+ *  Created on: Aug 1, 2026
+ *      Author: savo
+ */
 
+#ifndef TITAN_DATA_H_
+#define TITAN_DATA_H_
+
+#include <stdint.h>
 #include <stdbool.h>
 
-struct GPSState{
-    float altitude_m;
-    float latitude_deg;
-    float longitude_deg;
-    bool valid_position;
-    float speed_kmph;
+struct RiderBiometrics {
+	int16_t heartrate_bpm;
+	int16_t cadence_rpm;
+	int16_t power_w;
 };
 
-struct AtmoConditions {
+struct WheelStatus {
+	float speed_kmph;
+	float brake_disk_temperature_c;
+	uint16_t rotations;
+	uint_fast8_t spoke; // Which spoke it is currently on (partial rotation
+};
+
+struct GPSData {
+	bool valid_position;
+	float latitude_deg;
+	float longitude_deg;
+	float speed_kmph;
+	float altitude_m;
+
+	float distance_from_start_km;
+	float start_latitude_deg;
+	float start_longitude_deg;
+};
+
+struct TitanSummary {
+	int8_t primary_battery_soc;
+	int8_t secondary_battery_soc;
+
+	struct RiderBiometrics front_rider;
+	struct RiderBiometrics rear_rider;
+
+	struct WheelStatus front_wheel;
+	struct WheelStatus rear_wheel;
+	int32_t effective_rotations; // Allow upper level logic to decide what gets communicated as the rotations
+	float effective_speed_kmph;
+
+	struct GPSData gps;
+
 	float temperature_c;
-	float humidity_rel;
-	float static_pressure_pa;
 	uint16_t co2_ppm;
+	float humidity_percent;
+	float pressure_pa;
 };
 
-
-struct CompleteData {
-	struct AtmoConditions atmo;
-    struct GPSState gps;
-};
-
-#endif
+#endif /* TITAN_DATA_H_ */
