@@ -7,12 +7,15 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_i2c.h"
 #include <stdio.h>
+#include <stdbool.h>
 #include "ina219.h"
 
 // Must be left shifted before use in I2C HAL
 const uint8_t PRIM_INA = 0x40 << 1; // Address for primary board's INA219
 const uint8_t SEC_INA = 0x44 << 1;	// Address for secondary board's INA219
 
+static bool primary_present = false;
+static bool secondary_present = false;
 
 #define countof(x) (sizeof(x)/sizeof(x[0]))
 
@@ -51,17 +54,22 @@ HAL_StatusTypeDef setup_battery_monitoring(I2C_HandleTypeDef* bus, uint32_t time
 	ret_overall = HAL_OK;
 
 	ret = ina219_setup(PRIM_INA, bus, timeout);
-	if (ret != HAL_OK) {
-#ifdef DEBUG
-		printf("Primary INA219 setup error: %d\n\r", ret);
-#endif
+	primary_present = ret == HAL_OK;
+	if (ret == HAL_OK) {
+		printf("Primary INA219 setup successful\n\r");
+	}
+	else {
+		printf("Primary INA219 setup error: %d. TITAN will not attempt to read it.\n\r", ret);
 		ret_overall = ret;
 	}
+
 	ret = ina219_setup(SEC_INA, bus, timeout);
+	secondary_present = ret == HAL_OK;
+	if (ret == HAL_OK) {
+		printf("Secondary INA219 setup successful\n\r");
+	}
 	if (ret != HAL_OK) {
-#ifdef DEBUG
-		printf("Secondary INA219 setup error: %d\n\r", ret);
-#endif
+		printf("Secondary INA219 setup error: %d. TITAN will not attempt to read it.\n\r", ret);
 		ret_overall = ret;
 	}
 
@@ -79,26 +87,30 @@ HAL_StatusTypeDef read_battery_level(int8_t* primary_soc, int8_t* secondary_soc)
 
 	float voltage;
 
-	ret = ina219_read_bus_voltage(PRIM_INA, &voltage);
-	if (ret == HAL_OK) {
-		*primary_soc = stack_voltage_to_soc(voltage);
-	}
-	else {
+	if (primary_present) {
+		ret = ina219_read_bus_voltage(PRIM_INA, &voltage);
+		if (ret == HAL_OK) {
+			*primary_soc = stack_voltage_to_soc(voltage);
+		}
+		else {
 #ifdef DEBUG
-		printf("Primary INA219 read error: %d\n\r", ret);
+			printf("Primary INA219 read error: %d\n\r", ret);
 #endif
-		ret_overall = ret;
+			ret_overall = ret;
+		}
 	}
 
-	ret = ina219_read_bus_voltage(SEC_INA, &voltage);
-	if (ret == HAL_OK) {
-		*secondary_soc = stack_voltage_to_soc(voltage);
-	}
-	else {
+	if (secondary_present) {
+		ret = ina219_read_bus_voltage(SEC_INA, &voltage);
+		if (ret == HAL_OK) {
+			*secondary_soc = stack_voltage_to_soc(voltage);
+		}
+		else {
 #ifdef DEBUG
-		printf("Secondary INA219 read error: %d\n\r", ret);
+			printf("Secondary INA219 read error: %d\n\r", ret);
 #endif
-		ret_overall = ret;
+			ret_overall = ret;
+		}
 	}
 
 	return ret_overall;
