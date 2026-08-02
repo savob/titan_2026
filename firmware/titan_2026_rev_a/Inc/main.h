@@ -59,6 +59,17 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define DEBUG_UART huart4
+#define GPS_UART huart1
+#define PRIM_UART huart2
+#define SEC_UART huart5
+#define WHEEL_I2C hi2c1
+#define MAIN_I2C hi2c2
+#define RADIO_SPI hspi1
+#define LED_TIMER htim3
+#define REAR_ENC_TIMER htim1
+#define CO2_TIMER htim4
+#define FRONT_ENC_TIMER htim2
 #define ROLE_Pin GPIO_PIN_15
 #define ROLE_GPIO_Port GPIOC
 #define MAIN_RX_Pin GPIO_PIN_2

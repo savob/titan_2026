@@ -79,9 +79,6 @@ volatile uint16_t stm_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 
-UART_HandleTypeDef* GPS_UART = &huart1;
-UART_HandleTypeDef* RPI_UART = &huart2;
-UART_HandleTypeDef* STM_UART = &huart5; // Between STMs, board to board
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -166,22 +163,22 @@ int main(void)
 	memset(&summary, 0, sizeof(struct TitanSummary));
 
 	// Start timers once everything's initialized properly
-	HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
-	HAL_TIM_OC_Start_IT(&htim1, TIM_CHANNEL_2);
-	HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
-	HAL_TIM_OC_Start_IT(&htim2, TIM_CHANNEL_2);
-	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1); // Don't care for interrupt on capture here
-	HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_2);
-	HAL_TIM_OC_Start_IT(&htim4, TIM_CHANNEL_3);
+	HAL_TIM_IC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_2);
+	HAL_TIM_IC_Start_IT(&FRONT_ENC_TIMER, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(&FRONT_ENC_TIMER, TIM_CHANNEL_2);
+	HAL_TIM_IC_Start(&CO2_TIMER, TIM_CHANNEL_1); // Don't care for interrupt on capture here
+	HAL_TIM_IC_Start_IT(&CO2_TIMER, TIM_CHANNEL_2);
+	HAL_TIM_OC_Start_IT(&CO2_TIMER, TIM_CHANNEL_3);
 
-	HAL_StatusTypeDef ret = ina219_setup(PRIM_INA, &hi2c2, I2C_TIMEOUT);
+	HAL_StatusTypeDef ret = ina219_setup(PRIM_INA, &MAIN_I2C, I2C_TIMEOUT);
 	printf("Primary INA219 setup result: %d\n\r", ret);
-	ret = ina219_setup(SEC_INA, &hi2c2, I2C_TIMEOUT);
+	ret = ina219_setup(SEC_INA, &MAIN_I2C, I2C_TIMEOUT);
 	printf("Secondary INA219 setup result: %d\n\r", ret);
 
-	ret = atmo_setup(&hi2c2, I2C_TIMEOUT);
+	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
 
-	ret = scd4x_setup(&hi2c2, I2C_TIMEOUT);
+	ret = scd4x_setup(&MAIN_I2C, I2C_TIMEOUT);
 	const bool SCD_AVAILABLE = ret == HAL_OK;
 	if (ret == HAL_OK) printf("SCD41 setup success\n\r");
 	else printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret);
@@ -189,7 +186,7 @@ int main(void)
 	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
 	struct MLXDevice front_brake = {
 			.address = 0x5A,
-			.i2c_bus = &hi2c1,
+			.i2c_bus = &WHEEL_I2C,
 	};
 	ret = mlx_setup(front_brake, BRAKE_DISK_EMISSIVITY);
 	if (ret == HAL_OK) {
@@ -201,21 +198,27 @@ int main(void)
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
-	ret = HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
-	if (ret != HAL_OK) Error_Handler();
-
+	ret = HAL_UARTEx_ReceiveToIdle_IT(&GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+	if (ret != HAL_OK) {
+		printf("Failed to start GPS input buffer %d\n\r", ret);
+		Error_Handler();
+	}
 
 	const uint16_t COMMS_BUFFER_SIZE = 64; // Buffer size for data communication buffers
 	char rpi_buffer_in[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_in[COMMS_BUFFER_SIZE] = {};
-	char radio_buffer_in[COMMS_BUFFER_SIZE] = {};
 	char rpi_buffer_out[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_out[COMMS_BUFFER_SIZE] = {};
-	char radio_buffer_out[COMMS_BUFFER_SIZE] = {};
-	ret = HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
-	if (ret != HAL_OK) Error_Handler();
-	ret = HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
-	if (ret != HAL_OK) Error_Handler();
+	ret = HAL_UARTEx_ReceiveToIdle_IT(&PRIM_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
+	if (ret != HAL_OK) {
+		printf("Failed to start primary input buffer %d\n\r", ret);
+		Error_Handler();
+	}
+	ret = HAL_UARTEx_ReceiveToIdle_IT(&SEC_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
+	if (ret != HAL_OK) {
+		printf("Failed to start secondary input buffer %d\n\r", ret);
+		Error_Handler();
+	}
 
   /* USER CODE END 2 */
 
@@ -268,7 +271,7 @@ int main(void)
 			minmea_process_buffer(gps_buffer, (size_t)gps_message_length, &gps_data);
 			gps_message_length = 0;
 
-			HAL_UARTEx_ReceiveToIdle_IT(GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
+			HAL_UARTEx_ReceiveToIdle_IT(&GPS_UART, (uint8_t*)gps_buffer, GPS_BUFFER_SIZE);
 		}
 
 		uint16_t length_to_send = 0;
@@ -276,13 +279,13 @@ int main(void)
 			enum MessageStatus status = process_message(&summary, (uint8_t*)rpi_buffer_in, rpi_message_length, (uint8_t*)rpi_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
 			memset(rpi_buffer_in, 0, rpi_message_length);
 			rpi_message_length = 0;
-			HAL_UARTEx_ReceiveToIdle_IT(RPI_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
+			HAL_UARTEx_ReceiveToIdle_IT(&PRIM_UART, (uint8_t*)rpi_buffer_in, COMMS_BUFFER_SIZE);
 
 			switch (status) {
 			case MESSAGE_PARSED_OK_NO_RESPONSE:
 				break; // No further action needed
 			case MESSAGE_PARSED_OK_SEND_RESPONSE:
-				ret = HAL_UART_Transmit_DMA(RPI_UART, (uint8_t*)rpi_buffer_out, length_to_send);
+				ret = HAL_UART_Transmit_DMA(&PRIM_UART, (uint8_t*)rpi_buffer_out, length_to_send);
 #ifdef DEBUG
 				if (ret != HAL_OK) printf("Failed to send response to primary: %d", ret);
 				break;
@@ -305,13 +308,13 @@ int main(void)
 			enum MessageStatus status = process_message(&summary, (uint8_t*)stm_buffer_in, stm_message_length, (uint8_t*)stm_buffer_out	, COMMS_BUFFER_SIZE, &length_to_send);
 			memset(stm_buffer_in, 0, stm_message_length);
 			stm_message_length = 0;
-			HAL_UARTEx_ReceiveToIdle_IT(STM_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
+			HAL_UARTEx_ReceiveToIdle_IT(&SEC_UART, (uint8_t*)stm_buffer_in, COMMS_BUFFER_SIZE);
 
 			switch (status) {
 			case MESSAGE_PARSED_OK_NO_RESPONSE:
 				break; // No further action needed
 			case MESSAGE_PARSED_OK_SEND_RESPONSE:
-				ret = HAL_UART_Transmit_IT(STM_UART, (uint8_t*)stm_buffer_out, length_to_send);
+				ret = HAL_UART_Transmit_IT(&SEC_UART, (uint8_t*)stm_buffer_out, length_to_send);
 #ifdef DEBUG
 				if (ret != HAL_OK) printf("Failed to send response to secondary: %d", ret);
 				break;
@@ -1106,16 +1109,16 @@ inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count
 
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
-	if (htim->Instance == TIM1) {
+	if (htim->Instance == REAR_ENC_TIMER.Instance) {
 		rear_speed_kmph = calculate_wheel_speed_kmph(captured_value);
 		return;
 	}
-	if (htim->Instance == TIM2) {
+	if (htim->Instance == FRONT_ENC_TIMER.Instance) {
 		front_speed_kmph = calculate_wheel_speed_kmph(captured_value);
 		return;
 	}
 
-	if (htim->Instance == TIM4) {
+	if (htim->Instance == CO2_TIMER.Instance) {
 		// CO2 calculation
 		uint32_t duty_period = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
 		mh_z19_co2_ppm = calculate_co2_ppm(duty_period, captured_value);
@@ -1125,15 +1128,15 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 
 void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 	// On a timeout we've probably stopped, doesn't seem to work for either timer currently
-	if (htim->Instance == TIM1) {
+	if (htim->Instance == REAR_ENC_TIMER.Instance) {
 		rear_speed_kmph = 0;
 		return;
 	}
-	if (htim->Instance == TIM2) {
+	if (htim->Instance == FRONT_ENC_TIMER.Instance) {
 		front_speed_kmph = 0;
 		return;
 	}
-	if (htim->Instance == TIM4) {
+	if (htim->Instance == CO2_TIMER.Instance) {
 		mh_z19_co2_ppm = 0;
 		return;
 	}
@@ -1141,9 +1144,9 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-	if (huart == GPS_UART) gps_message_length = Size;
-	if (huart == RPI_UART) rpi_message_length = Size;
-	if (huart == STM_UART) stm_message_length = Size;
+	if (huart == &GPS_UART) gps_message_length = Size;
+	if (huart == &PRIM_UART) rpi_message_length = Size;
+	if (huart == &SEC_UART) stm_message_length = Size;
 	// Leave the trigger for the next DMA until after the buffer parsed or copied elsewhere to prevent the current message being lost
 }
 /* USER CODE END 4 */
