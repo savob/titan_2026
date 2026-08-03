@@ -983,8 +983,21 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(DHT_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+  const GPIO_PinState ROLE_PRIMARY = GPIO_PIN_RESET;
+  if (HAL_GPIO_ReadPin(ROLE_GPIO_Port, ROLE_Pin) == ROLE_PRIMARY) return; // Be free to return to main and work!
 
-  /* USER CODE END MX_GPIO_Init_2 */
+  // If secondary system light up STAT3 and do nothing else
+  GPIO_InitStruct.Pin = LED_STAT3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_STAT3_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(LED_STAT3_GPIO_Port, LED_STAT3_Pin, GPIO_PIN_SET);
+  while (1) {
+	  // Stay trapped here and do nothing as secondary
+	  // Do not start the UART with the RPi or else it will contest with the primary board's comms
+  }
+   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
