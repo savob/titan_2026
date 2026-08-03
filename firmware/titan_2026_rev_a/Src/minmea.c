@@ -7,6 +7,7 @@
  */
 
 #include "minmea.h"
+#include <math.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -770,7 +771,29 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSData* sum
     return false;
 }
 
+static float distance_km_between_coordinates(float lat_a_deg, float long_a_deg, float lat_b_deg, float long_b_deg) {
+	// Haversine formula code adapted from https://www.movable-type.co.uk/scripts/latlong.html
+	// This is quite computationally expensive, taking about 0.15 ms to compute per call!
+	const float RADIUS_KM = 6371.0;
+	const float phi_a = lat_a_deg * (M_PI / 180.0);
+	const float phi_b = lat_b_deg * (M_PI / 180.0);
+	const float delta_phi = (lat_b_deg - lat_a_deg) * (M_PI / 180.0);
+	const float delta_lambda = (long_b_deg - long_a_deg) * (M_PI / 180.0);
+
+	const float a1 = sinf(delta_phi / 2.0);
+	const float a2 = sinf(delta_lambda / 2.0);
+	const float a = a1 * a1 + cosf(phi_a) * cosf(phi_b) * a2 * a2;
+
+	const float c = 2 * atan2f(sqrtf(a), sqrtf(1 - a));
+
+	const float distance_km = RADIUS_KM * c;
+
+	return distance_km;
+}
+
 bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPSData* summary) {
+    if (BUFFER_LENGTH == 0) return true; // Ignore an empty buffer
+
 	bool all_parsed_ok = true;
 
 	for (size_t i = 0; i < BUFFER_LENGTH;) {
@@ -786,6 +809,12 @@ bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPS
 		// printf("  GNSS Line: \"%s\"\r\n", &buffer[start_of_sentence]);
 		all_parsed_ok = all_parsed_ok && process_gps_string(&buffer[start_of_sentence], i - start_of_sentence, summary);
 	}
+
+	if (all_parsed_ok && summary->valid_position) {
+		// Calculating distance is pretty computationally intensive so only do it if we've got good new data
+		summary->distance_from_start_km = distance_km_between_coordinates(summary->start_latitude_deg, summary->start_longitude_deg, summary->latitude_deg, summary->latitude_deg);
+	}
+	else summary->distance_from_start_km = 0;
 
 	return all_parsed_ok;
 }
