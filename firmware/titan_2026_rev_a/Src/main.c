@@ -66,7 +66,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-volatile float mh_z19_co2_ppm = 0;
+volatile uint16_t mh_z19_co2_ppm = 0;
 
 volatile uint16_t gps_message_length = 0;
 volatile uint16_t rpi_message_length = 0;
@@ -160,16 +160,14 @@ int main(void)
 	HAL_TIM_OC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_2);
 	HAL_TIM_IC_Start_IT(&FRONT_ENC_TIMER, TIM_CHANNEL_1);
 	HAL_TIM_OC_Start_IT(&FRONT_ENC_TIMER, TIM_CHANNEL_2);
+	HAL_TIM_Base_Start_IT(&CO2_TIMER); // Sets up for period elapsed interrupt
 	HAL_TIM_IC_Start(&CO2_TIMER, TIM_CHANNEL_1); // Don't care for interrupt on capture here
 	HAL_TIM_IC_Start_IT(&CO2_TIMER, TIM_CHANNEL_2);
-	HAL_TIM_OC_Start_IT(&CO2_TIMER, TIM_CHANNEL_3);
 
 	HAL_StatusTypeDef ret;
 	ret = setup_battery_monitoring(&MAIN_I2C, I2C_TIMEOUT);
 
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
-
-
 
 	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
 	struct MLXDevice front_brake = {
@@ -253,10 +251,10 @@ int main(void)
 		ret = mlx_read_object_temperature_deg_c(front_brake, &temp_temp);
 #ifdef DEBUG
 		if (ret == HAL_OK) {
-			printf("Front brake: %.2f C\r\n", temp_temp);
+			printf("Front brake: %.2f *C\r\n", temp_temp);
 		}
 		else {
-			// printf("Error %d with MLX read\r\n", ret);
+			printf("Error %d with MLX read\r\n", ret);
 		}
 #endif
 
@@ -720,7 +718,6 @@ static void MX_TIM4_Init(void)
   TIM_SlaveConfigTypeDef sSlaveConfig = {0};
   TIM_IC_InitTypeDef sConfigIC = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM4_Init 1 */
 
@@ -737,10 +734,6 @@ static void MX_TIM4_Init(void)
   }
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_OC_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -774,14 +767,6 @@ static void MX_TIM4_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_TOGGLE;
-  sConfigOC.Pulse = 65530;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_OC_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -997,7 +982,7 @@ static void MX_GPIO_Init(void)
 	  // Stay trapped here and do nothing as secondary
 	  // Do not start the UART with the RPi or else it will contest with the primary board's comms
   }
-   /* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -1033,7 +1018,7 @@ inline static void update_wheel_status(volatile struct WheelStatus* status, uint
 	}
 }
 
-inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count) {
+inline static uint16_t calculate_co2_ppm(uint32_t duty_count, uint32_t period_count) {
 	// Duty should always be smaller than the full period
 	if (duty_count > period_count) {
 		return -1;
@@ -1056,7 +1041,7 @@ inline static float calculate_co2_ppm(uint32_t duty_count, uint32_t period_count
 	const float PORTION = HIGH_TIME / DATA_PERIOD; // The actual data duty/portion discounting the holds at each level
 
 	const float PPM_RANGE = 5000.0; // Range of measurement for the CO2 sensor installed
-	return (PORTION * PPM_RANGE);
+	return (uint16_t)(PORTION * PPM_RANGE);
 }
 
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
@@ -1078,6 +1063,13 @@ void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	}
 }
 
+void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim) {
+	if (htim->Instance == CO2_TIMER.Instance) {
+		mh_z19_co2_ppm = 0;
+		return;
+	}
+}
+
 void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 	// On a timeout we've probably stopped
 	if (htim->Instance == REAR_ENC_TIMER.Instance) {
@@ -1088,12 +1080,7 @@ void HAL_TIM_OC_DelayElapsedCallback (TIM_HandleTypeDef * htim) {
 		summary.front_wheel.speed_kmph = 0;
 		return;
 	}
-	if (htim->Instance == CO2_TIMER.Instance) {
-		mh_z19_co2_ppm = 0;
-		return;
-	}
 }
-
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 	if (huart == &GPS_UART) gps_message_length = Size;

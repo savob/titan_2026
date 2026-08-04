@@ -76,7 +76,6 @@ static HAL_StatusTypeDef _read_16(struct MLXDevice target, uint8_t reg_address, 
 
 	uint16_t temp_address = reg_address;
 	HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(target.i2c_bus, target.address << 1, temp_address, 1, buffer, 3, I2C_TIMEOUT);
-	// TODO: Solve the write/reading here, we do need a repeated start
 
 	if (ret != HAL_OK) {
 		*destination = 0;
