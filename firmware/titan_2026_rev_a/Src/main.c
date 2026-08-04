@@ -1046,12 +1046,32 @@ inline static uint16_t calculate_co2_ppm(uint32_t duty_count, uint32_t period_co
 
 void HAL_TIM_IC_CaptureCallback (TIM_HandleTypeDef * htim) {
 	uint32_t captured_value = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1); // All our captures need channel 1 value
+
+	/* For wheel speeds we want to ignore the first capture after an overflow since
+	 * it will not properly represent speed since we won't know how many timeouts
+	 * have elapsed and accidentally give a false high speed
+	 *
+	 * To that end if speed is 0 we do one update to a miniscule speed so the next
+	 * update recognizes a non-zero value.
+	 *
+	 * We won't bother with a spoke count update on the first post timeout edge
+	 * as it might very well be a reversed rotation. Realistically in normal
+	 * operation when we care for distance we won't be going slow enough for this
+	 * to matter.
+	 */
+
 	if (htim->Instance == REAR_ENC_TIMER.Instance) {
-		update_wheel_status(&summary.rear_wheel, captured_value);
+		if (summary.rear_wheel.speed_kmph != 0) update_wheel_status(&summary.rear_wheel, captured_value);
+		else {
+			summary.rear_wheel.speed_kmph = 0.1;
+		}
 		return;
 	}
 	if (htim->Instance == FRONT_ENC_TIMER.Instance) {
-		update_wheel_status(&summary.front_wheel, captured_value);
+		if (summary.front_wheel.speed_kmph != 0) update_wheel_status(&summary.front_wheel, captured_value);
+		else {
+			summary.front_wheel.speed_kmph = 0.1;
+		}
 		return;
 	}
 
