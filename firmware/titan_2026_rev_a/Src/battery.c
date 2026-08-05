@@ -78,7 +78,7 @@ HAL_StatusTypeDef setup_battery_monitoring(I2C_HandleTypeDef* bus, uint32_t time
 
 HAL_StatusTypeDef read_battery_level(int8_t* primary_soc, int8_t* secondary_soc) {
 	static uint32_t next_tick_mark = 0;
-	const uint32_t PERIOD_MS = 250;
+	const uint32_t PERIOD_MS = 500;
 	if (HAL_GetTick() < next_tick_mark) return HAL_OK;
 	next_tick_mark = HAL_GetTick() + PERIOD_MS;
 
