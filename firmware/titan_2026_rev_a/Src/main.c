@@ -24,7 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "atmosphere.h"
-#include "mlx90614.h"
 #include "minmea.h"
 #include "titan_data.h"
 #include "communication.h"
@@ -169,18 +168,7 @@ int main(void)
 
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
 
-	const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
-	struct MLXDevice front_brake = {
-			.address = 0x5A,
-			.i2c_bus = &WHEEL_I2C,
-	};
-	ret = mlx_setup(front_brake, BRAKE_DISK_EMISSIVITY);
-	if (ret == HAL_OK) {
-		printf("Front brake disk setup success at address 0x%2X\n\r", front_brake.address);
-	}
-	else {
-		printf("Front brake disk setup failed, error code: %d (Address: 0x%2X)\n\r", ret, front_brake.address);
-	}
+	ret = setup_brake_disk_sensors(&MAIN_I2C, I2C_TIMEOUT);
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
@@ -238,32 +226,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1) {
 		HAL_IWDG_Refresh(&hiwdg);
-		HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
 		ret = atmo_conditions_update((struct TitanSummary*) &summary, (uint16_t) mh_z19_co2_ppm);
-
 		ret = read_battery_level((int8_t*)&summary.primary_battery_soc, (int8_t*)&summary.secondary_battery_soc);
-
-		float temp_temp;
-		ret = mlx_read_object_temperature_deg_c(front_brake, &temp_temp);
-#ifdef DEBUG
-		if (ret == HAL_OK) {
-			printf("Front brake: %.2f *C\r\n", temp_temp);
-		}
-		else {
-			printf("Error %d with MLX read\r\n", ret);
-		}
-#endif
+		ret = operate_brake_disk_sensors(&summary.front_wheel.brake_disk_temperature_c, &summary.rear_wheel.brake_disk_temperature_c);
 
 		summarize_wheel_data(&summary);
 
 		ret = operate_interface(&gps, &summary);
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
-
 	}
   /* USER CODE END 3 */
 }

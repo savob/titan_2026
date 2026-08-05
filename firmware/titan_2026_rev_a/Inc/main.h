@@ -57,6 +57,9 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 HAL_StatusTypeDef setup_battery_monitoring(I2C_HandleTypeDef* bus, uint32_t timeout);
 HAL_StatusTypeDef read_battery_level(int8_t* primary_soc, int8_t* secondary_soc);
+
+HAL_StatusTypeDef setup_brake_disk_sensors(I2C_HandleTypeDef* bus, uint32_t timeout);
+HAL_StatusTypeDef operate_brake_disk_sensors(float* front_temp_c, float* rear_temp_c);
 void summarize_wheel_data(volatile struct TitanSummary* summary);
 /* USER CODE END EFP */
 
