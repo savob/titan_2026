@@ -21,8 +21,8 @@ static const uint8_t REAR_ADDRESS = 0x02;
 static struct MLXDevice front_brake;
 static struct MLXDevice rear_brake;
 
-static bool rear_active = true;
-static bool front_active = true;
+static bool rear_active = false;
+static bool front_active = false;
 
 HAL_StatusTypeDef setup_brake_disk_sensors(I2C_HandleTypeDef* bus, uint32_t timeout) {
 	UNUSED(timeout);
@@ -37,23 +37,23 @@ HAL_StatusTypeDef setup_brake_disk_sensors(I2C_HandleTypeDef* bus, uint32_t time
 	HAL_StatusTypeDef ret = mlx_setup(front_brake, BRAKE_DISK_EMISSIVITY);
 	if (ret == HAL_OK) {
 		front_active = true;
-		printf("Front brake disk setup success at address 0x%2X\n\r", front_brake.address);
+		printf("Front brake disk setup success at address 0x%02X\n\r", front_brake.address);
 	}
 	else {
 		front_active = false;
 		ret_overall = HAL_ERROR;
-		printf("Front brake disk setup failed, error code: %d (Address: 0x%2X)\n\r", ret, front_brake.address);
+		printf("Front brake disk setup failed, error code: %d (Address: 0x%02X)\n\r", ret, front_brake.address);
 	}
 
 	ret = mlx_setup(rear_brake, BRAKE_DISK_EMISSIVITY);
 	if (ret == HAL_OK) {
 		rear_active = true;
-		printf("Rear brake disk setup success at address 0x%2X\n\r", rear_brake.address);
+		printf("Rear brake disk setup success at address 0x%02X\n\r", rear_brake.address);
 	}
 	else {
 		rear_active = false;
 		ret_overall = HAL_ERROR;
-		printf("Rear brake disk setup failed, error code: %d (Address: 0x%2X)\n\r", ret, rear_brake.address);
+		printf("Rear brake disk setup failed, error code: %d (Address: 0x%02X)\n\r", ret, rear_brake.address);
 	}
 
 	return ret_overall;
