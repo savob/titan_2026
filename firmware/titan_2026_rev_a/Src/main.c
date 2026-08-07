@@ -1083,6 +1083,16 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 	if (huart == &SEC_UART) stm_message_length = Size;
 	// Leave the trigger for the next DMA until after the buffer parsed or copied elsewhere to prevent the current message being lost
 }
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+	HAL_IWDG_Refresh(&hiwdg); // Allow the lights to flash for a bit before we recover
+
+	if (huart == &GPS_UART) printf("Error %ld on GPS line\r\n", huart->ErrorCode);
+	if (huart == &PRIM_UART) printf("Error %ld on primary line\r\n", huart->ErrorCode);
+	if (huart == &SEC_UART) printf("Error %ld on secondary line\r\n", huart->ErrorCode);
+
+	Error_Handler();
+}
 /* USER CODE END 4 */
 
 /**
