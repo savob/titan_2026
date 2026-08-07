@@ -179,19 +179,6 @@ int main(void)
 	char rpi_buffer_out[COMMS_BUFFER_SIZE] = {};
 	char stm_buffer_out[COMMS_BUFFER_SIZE] = {};
 
-	struct CommunicationInterface gps = { // GPS should never send so don't bother much with it
-			.name = "GPS",
-			.buffer_in = gps_buffer,
-			.buffer_in_length = GPS_BUFFER_SIZE,
-			.available_bytes_to_read = &gps_message_length,
-			.buffer_out = gps_buffer,
-			.buffer_out_length = GPS_BUFFER_SIZE,
-			.type = INTERFACE_UART_GPS,
-			.prime_read_function = HAL_UARTEx_ReceiveToIdle_IT,
-			.send_function = HAL_UART_Transmit_IT,
-			.uart = &GPS_UART
-	};
-
 	struct CommunicationInterface primary = { // GPS should never send so don't bother much with it
 			.name = "primary",
 			.buffer_in = rpi_buffer_in,
@@ -217,7 +204,12 @@ int main(void)
 			.send_function = HAL_UART_Transmit_IT,
 			.uart = &SEC_UART
 	};
-	ret = setup_interface(&gps);
+
+	while (GPS_UART.RxState != HAL_UART_STATE_READY) {
+		// Wait until ready to receive
+	}
+	HAL_UART_Receive_DMA(&GPS_UART, (uint8_t*) gps_buffer, GPS_BUFFER_SIZE);
+
 	ret = setup_interface(&primary);
 	ret = setup_interface(&secondary);
   /* USER CODE END 2 */
@@ -229,14 +221,38 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
 		ret = atmo_conditions_update((struct TitanSummary*) &summary, (uint16_t) mh_z19_co2_ppm);
 		ret = read_battery_level((int8_t*)&summary.primary_battery_soc, (int8_t*)&summary.secondary_battery_soc);
 		ret = operate_brake_disk_sensors(&summary.front_wheel.brake_disk_temperature_c, &summary.rear_wheel.brake_disk_temperature_c);
 
 		summarize_wheel_data(&summary);
 
-		ret = operate_interface(&gps, &summary);
+		// Check status of GPS input buffer
+		uint_fast16_t current_gps_writing_index = GPS_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(GPS_UART.hdmarx);
+		uint_fast16_t last_gps_written_index = (current_gps_writing_index == 0) ? GPS_BUFFER_SIZE - 1 : current_gps_writing_index - 1;
+		static uint16_t gps_message_start_index = 0;
+		if (gps_buffer[last_gps_written_index] == '\n') {
+			bool processed_ok = false;
+
+			if (gps_message_start_index < last_gps_written_index) {
+				processed_ok = minmea_process_buffer(&gps_buffer[gps_message_start_index], last_gps_written_index - gps_message_start_index, &summary.gps);
+			}
+			else {
+				// Handle the roll over by copying to a temporary buffer
+				char temp_gps[GPS_BUFFER_SIZE];
+				uint_fast16_t tail_portion = GPS_BUFFER_SIZE - gps_message_start_index; // In an array of 10 if we start at 6 and need to go to index 2, there are 4 in the tail, 3 in the start
+				uint_fast16_t gps_message_length = tail_portion + last_gps_written_index + 1; // +1 to account for zeroth index
+
+				memcpy(temp_gps, &gps_buffer[gps_message_start_index], tail_portion);
+				memcpy(&temp_gps[tail_portion], gps_buffer, last_gps_written_index);
+
+				processed_ok = minmea_process_buffer(temp_gps, gps_message_length, &summary.gps);
+			}
+			// Next message will start after newline
+			gps_message_start_index = last_gps_written_index + 1;
+			if (gps_message_start_index >= GPS_BUFFER_SIZE) gps_message_start_index = 0;
+		}
+
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
 	}
