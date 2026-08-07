@@ -393,6 +393,8 @@ HAL_StatusTypeDef setup_interface(struct CommunicationInterface* interface) {
 	switch (interface->type) {
 	case INTERFACE_UART_GPS:
 	case INTERFACE_UART_TITAN:
+		if (interface->prime_read_function == NULL) return HAL_OK;
+
 		int attempts = 0;
 		for (; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
 			ret = interface->prime_read_function(interface->uart, (uint8_t*)interface->buffer_in, interface->buffer_in_length);
@@ -418,8 +420,8 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 	if (*interface->available_bytes_to_read == 0) return HAL_OK;
 
 	uint16_t length_to_send;
-
 	enum MessageStatus status = MESSAGE_PARSED_OK_NO_RESPONSE;
+	HAL_StatusTypeDef ret = HAL_ERROR; // Ensure we try RX/TX functions once by starting with non-OK
 
 	switch (interface->type) {
 	case INTERFACE_UART_TITAN:
@@ -435,28 +437,34 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 		return HAL_ERROR; // Unhandled
 	}
 
-	// Clear received buffer and immediately reattempt receiving
-	memset(interface->buffer_in, 0, *interface->available_bytes_to_read);
-	*interface->available_bytes_to_read = 0;
+	if (interface->prime_read_function != NULL) {
+		// Clear received buffer and immediately reattempt receiving
+		memset(interface->buffer_in, 0, *interface->available_bytes_to_read);
+		*interface->available_bytes_to_read = 0;
 
-	HAL_StatusTypeDef ret = HAL_ERROR; // Ensure we try once
-	int attempts;
-	for (attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
-		ret = interface->prime_read_function(interface->uart, (uint8_t*)interface->buffer_in, interface->buffer_in_length);
-		if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
+		for (int attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
+			ret = interface->prime_read_function(interface->uart, (uint8_t*)interface->buffer_in, interface->buffer_in_length);
+			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
+		}
+		if (ret != HAL_OK) {
+			printf("Failed to start %s input buffer. Error code: %d\n\r", interface->name, ret);
+			Error_Handler(); // Not restarting RX is critical
+		}
 	}
-	if (ret != HAL_OK) {
-		printf("Failed to start %s input buffer. Error code: %d\n\r", interface->name, ret);
-		Error_Handler(); // Not restarting RX is critical
-	}
-
 
 	switch (status) {
 	case MESSAGE_PARSED_OK_NO_RESPONSE:
 		return HAL_OK; // No further action needed
 	case MESSAGE_PARSED_OK_SEND_RESPONSE:
+		if (interface->send_function != NULL) {
+#ifdef DEBUG
+			printf("No TX function provided for %s\r\n", interface->name);
+#endif
+			return HAL_ERROR;
+		}
+
 		ret = HAL_ERROR; // Ensure we attempt a TX
-		for (attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
+		for (int attempts = 0; attempts < ATTEMPT_LIMIT && ret != HAL_OK; attempts++) {
 			ret = interface->send_function(interface->uart, (uint8_t*)interface->buffer_out, length_to_send);
 			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
 		}
