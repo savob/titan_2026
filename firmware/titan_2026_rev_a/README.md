@@ -32,3 +32,13 @@ General purpose indicators, used for just about anything that isn't an issue.
 
 - If only `STAT3` is illuminated then the microcontroller has identified it is serving as the secondary microcontroller and is essentially inactive
 - If both `STAT2` and `STAT3` are illuminated _(without `STAT1`)_ then the microcontroller is operating as a primary microncontroller
+
+## Potential Improvements
+
+The code as is, can function as a drop in replacement for the 2022 boards (with modified connectors). There are a few minor features or improvemetns that are being considered for future firmware versions:
+
+- [ ] Adding radio broadcasts via nRF24 radio module
+- [ ] Make better use of the LEDs to indicate other states such as decreased performance
+- [ ] Work on a safe recovery of data following a Watchdog reset to try and preserve runtime values. Namely to not lose distance covered if a reboot happens restarting the count. Check out `__attribute__((noinit))`
+- [ ] Have the secondary board firmware check if it can find the INA219 IC on the bus to alert users to inproper configuration somehow
+- [ ] Make use of the USB connection perhaps for additional debugging interface
