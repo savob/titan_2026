@@ -31,7 +31,7 @@ Although the boards were largely assembled by a third party, some pieces were om
 On the TITAN board there are a three clusters of solder jumpers that need to be properly set for the boards to work.
 
 >[!NOTE]
-> None of these jumpers should be left open when using a board. No damage will occur if they are left open, but it will certainly lead to degraded performance since these route power or data around the system needed for things to work properly.
+> No damage will occur if any jumper is left open, but it will likely lead to degraded performance since most of these route power or data around the system needed for things to work properly.
 
 ### Wheel Power Selection
 
@@ -47,7 +47,10 @@ The final _mandatory_ bridge is between the two XT-30 connectors. This selects w
 
 ### Inter Board Ground Connection
 
-Lastly there is a bridge labelled `GND TIE` near the inter board connectors, **this one can be left open with no drawbacks**. It connects the GND of the two baords together taht would otherwise be totally isolated - which enables electrical probing between two boards, but does slightly undermine some of the protection that the isolation chip offers. _This bridge has no effect on secondary boards._
+Lastly there is a bridge labelled `GND TIE` near the inter board connectors, **this one can be left open with no drawbacks**. It connects the GND of the two baords together that would otherwise be totally isolated - which enables electrical probing across the two boards, but does slightly undermine some of the protection that the isolation chip offers. _This bridge has no effect on secondary boards._
+
+>[!IMPORTANT]
+> Since probing from one board to another is unlikely to ever be needed _(I personally never needed it during my testing of TITAN)_  I strongly recommend that the ground tie (`GND TIE`) be left open for any racing TITAN hardware to offer the maximum protation to failures.
 
 The image below shows a completed TITAN board with the solder jumpers configured for primary operation, with battery power supplied directly to the monitor, and its ground connected to the secondary. _Please ignore the damage to the battery XT-30 from careless soldering!_
 
