@@ -69,15 +69,9 @@ There are a multitude changes between the 2022 and 2026 versions of the TITAN bo
 
 These cover all the changes I felt were really needed on TITAN. There was only one change that I would like but couldn't justify: integrating the nRF24L01+LNA radio used for telemetry. It would needlessly take me more time to draw the schematic, spec the parts, and then layout while not meaningfully improving any performance metric while greatly increasing the cost compared to just getting a handful of the preassembled modules online. _I'll put aside the vain desire for a majestic monolithic PCB, for now._
 
-## Issues
+## GPS Antenna Network Failure
 
-These are critical issues with the boards and need attention to fix or address in software or hardware:
-
-- I2C1 seems to knock itself offline about 2 seconds into a new boot. Root cause is unknown at present, although I suspect a chip errata since it works fine for as much activity is desired up to that two second mark. One suggested remedy is to perform a software restart of the I2C peripheral and it's pins when issues are detected - this has yet to be tried.
-
-### GPS Antenna Network Failure
-
-GPS antenna network routing has issues. This causes the on board GPS module always reports "ANTENNA OPEN" even with an antenna connected or a short to GND. **To work around this issues, an off board module with a separate antenna connection should be soldered in place of the onboard one and use its RX/TX lines.**
+There is only one critical issue with this board and that's the GPS antenna network routing. This causes the on board GPS module always reports "ANTENNA OPEN" even with an antenna connected or a short to GND. **To work around this issues, an off board module with a separate antenna connection should be soldered in place of the onboard one and use its RX/TX lines.**
 
 Should another revision be made the following steps should be taken to hopefully address this:
 
