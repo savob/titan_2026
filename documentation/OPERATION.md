@@ -1,6 +1,6 @@
 # Operating TITAN
 
-TITAN was designed and tested to be a pretty simple system to operate by requiring no user input beyond a the input to power on, once assembled correctly. This has been preserved with this update to the system, which aimed to not distrupt any of the established TITAN protocols.
+TITAN was designed and tested to be a pretty simple system to operate by requiring no user input beyond a the input to power on, once assembled correctly. This has been preserved with this update to the system, which aimed to not disrupt any of the established TITAN protocols.
 
 >[!NOTE]
 > This document assumes the TITAN 2026 electrical system has already assembled and setup. For instructions on how to assemble and setup the TITAN hardware please refer to the [assembly document](./ASSEMBLY.md).
@@ -9,14 +9,14 @@ TITAN was designed and tested to be a pretty simple system to operate by requiri
 
 _The system's life force!_ The batteries TITAN was **designed to use 3S LiFePO4 batteries**, so I recommend they continue to be used. Their working range of voltages are 9.0&nbsp;V to 10.8&nbsp;V with a nominal voltage of 9.9&nbsp;V. All batteries should be charged fully prior to any use of TITAN.
 
-Although designed for 3S LiFePO4 batteries, the input of TITAN 2026 can handle a wide range of voltages and still operate without issue. Despite the labelling of `12V MAX`, the RPi board can tolerate between 5&nbsp;V and 17&nbsp;V on the input and provide the needed power for all systems. The stated 12&nbsp;V limit is imposed by the monitor which depending on how the board is configured may draw power from the regulated 5&nbsp;V rail _(in which case the board's own limits still apply)_ or connected directly to the battery which would mean the battery must satisfy the monitor's power requirements. In the the 2022 system the monitors were all designed to handle 12&nbsp;V at most so I kept that warning on the board should the same monitors continue to be used, **please check the monitors used for their power requirements - twice!**
+Although designed for 3S LiFePO4 batteries, the input of TITAN 2026 can handle a wide range of voltages and still operate without issue. Despite the labeling of `12V MAX`, the RPi board can tolerate between 5&nbsp;V and 17&nbsp;V on the input and provide the needed power for all systems. The stated 12&nbsp;V limit is imposed by the monitor which depending on how the board is configured may draw power from the regulated 5&nbsp;V rail _(in which case the board's own limits still apply)_ or connected directly to the battery which would mean the battery must satisfy the monitor's power requirements. In the the 2022 system the monitors were all designed to handle 12&nbsp;V at most so I kept that warning on the board should the same monitors continue to be used, **please check the monitors used for their power requirements - twice!**
 
 >[!TIP]
 > LiFePO4 chemistry batteries are preferred for TITAN due to their safer nature. Their chemistry has a larger range of environmental conditions where it is stable and less dramatic failure modes should the worst come to happen which affords our riders more time to vacate the vehicle in an emergency.
 
 The exact power draw of TITAN is approximately 10&nbsp;W per RPi vision system, about half that for the analog back up system. As such **a 1000&nbsp;mAh 3S LiFePO4 battery can supply a single vision system an hour of operation**. This is plenty for most of our 20 minute heats - but warrants changes for longer testing sessions.
 
-There is circuitry to allow TITAN RPi HATs to seemlessly and safely switch between battery and USB power when in use, should both sources be connected to the board then the battery is selected for power. It is not recommended to use USB power to power an RPi through the HAT as the USB-C connector is configured to only request around 5&nbsp;W of power - enough to run the sensor system.
+There is circuitry to allow TITAN RPi HATs to seamlessly and safely switch between battery and USB power when in use, should both sources be connected to the board then the battery is selected for power. It is not recommended to use USB power to power an RPi through the HAT as the USB-C connector is configured to only request around 5&nbsp;W of power - enough to run the sensor system.
 
 ## Start Up
 
@@ -32,7 +32,7 @@ With TITAN assembled correctly the process to launch the system is pretty straig
    3. Backup system
 3. Press the power button (`PWR_RPi`) on RPi systems to boot them if needed - for example if they were shutdown without battery removal
 
-The backup system should show the video feed immediately when turned on. The RPi systems will take about 30 seconds to put the video on screen, which will be preceeded with boot messages and a printing of the system's configuration.
+The backup system should show the video feed immediately when turned on. The RPi systems will take about 30 seconds to put the video on screen, which will be preceded with boot messages and a printing of the system's configuration.
 
 ## Shut Down
 

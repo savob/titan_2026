@@ -1,10 +1,10 @@
 # Calibration Protocols
 
-TITAN uses some sensor systems that need calibration to operate at their best, so this documenta compiles the calibration procedure for those systems.
+TITAN uses some sensor systems that need calibration to operate at their best, so this document compiles the calibration procedure for those systems.
 
 ## Wheel Encoder
 
-On the wheel board there is a circuit which uses an anlog IR reflectometer sensor to capture the passing of brake disk spokes. This sensor's analog output is passed through an analog comparator with a hysteresis circuit to be converted into a clean digital signal for the microcontroller to monitor. This section is larely copied from the board's own [`README.md](../hardware/wheel_2026_rev_a/README.md#tuning-the-encoders-comparator-operation).
+On the wheel board there is a circuit which uses an analog IR reflectometer sensor to capture the passing of brake disk spokes. This sensor's analog output is passed through an analog comparator with a hysteresis circuit to be converted into a clean digital signal for the microcontroller to monitor. This section is largely copied from the board's own [`README.md](../hardware/wheel_2026_rev_a/README.md#tuning-the-encoders-comparator-operation).
 
 To calibrate this circuit there are two potentiometers that need to be set: one for the base threshold the sensor's value is compared to, `THRES`, and then a second to increase the amount of hysteresis, `HYST`. Hysteresis is useful in preventing noise on the analog signal to cause multiple switches of the output fooling the system into thinking the wheel is spinning far faster than it is.
 
@@ -51,4 +51,4 @@ The precise way to do this, no _major_ guesstimations here!
     - If the hysteresis gets too large then it might make it hard to catch occasional pulses leading to slower perceived speed.
 12. Spin the wheel to ensure that the LED is flashing with each spoke passing.
 
-If done correctly with measurements, especially an oscillscope, then one can be fairly confident in the result of this calibration. Nonetheless, it is still worthwihle to start up TITAN's video system and see the values shown on the overlay match expectations and don't fluctuate wildly.
+If done correctly with measurements, especially an oscilloscope, then one can be fairly confident in the result of this calibration. Nonetheless, it is still worthwhile to start up TITAN's video system and see the values shown on the overlay match expectations and don't fluctuate wildly.

@@ -46,7 +46,7 @@ This starts with the primary digital vision systems for each rider, then the bac
 > These steps may be performed in any order when unpowered. Here they are presented in the order that will likely be the most convenient to perform.
 
 1. Check the radio antennas are mounted to the radio window in the tail
-   - nRF24 antenna should be posiitoned normal to the road
+   - nRF24 antenna should be positioned normal to the road
    - GPS antenna doesn't need a specific orientation
 2. Check the sensors are installed
    - Front wheel brake temperature sensor in wheel bracket
