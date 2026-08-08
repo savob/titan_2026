@@ -42,3 +42,4 @@ The code as is, can function as a drop in replacement for the 2022 boards (with 
 - [ ] Work on a safe recovery of data following a Watchdog reset to try and preserve runtime values. Namely to not lose distance covered if a reboot happens restarting the count. Check out `__attribute__((noinit))`
 - [ ] Have the secondary board firmware check if it can find the INA219 IC on the bus to alert users to inproper configuration somehow
 - [ ] Make use of the USB connection perhaps for additional debugging interface
+- [ ] Autodetect the SCD-4x variant used on the board, and add altitude adjustment
