@@ -22,17 +22,18 @@ To begin, the board must be installed into the wheel bracket and powered, _ideal
 
 ### Without an Oscilloscope
 
-1. Turn both potentiometers entirely clockwise to reset them
-2. Rotate the wheel so that the IR sensor is entirely clear of any brake disk spokes
-3. Check that the LED is lit up, if not there may be an issue with the board or too much ambient IR which will need different conditions for testing
-4. Rotate the wheel so a spoke is directly in front of the IR sensor
-5. Turn `THRES` counterclockwise to increase it until the LED turns off, remember this as the "low" mark
-6. Spin the wheel and make sure that the LED is turning off with each passing of a spoke, and then back on again. Gradually increase `THRES` until the LED is no longer turning on again when the spoke is gone - this is the "high" mark.
-7. Set `THRES` to be halfway between the "low" and "high" mark. Spinning the wheel should have the LED flash again with each spoke pass.
-8. Keep spinning the wheel and increasing `HYST` by turning it counterclockwise
-9. Once the LED is no longer changing state with the wheel's rotation, this it the "high" mark
-10. Set `HYST` to be about halfway from the most clockwise point to the "high" mark
-11. Spin the wheel to ensure that the LED is flashing again
+1. Connect the target wheel board to an RPi HAT board and supply power to the HAT board to power the sensor board - battery or USB power is fine.
+2. _Gently_ turn both potentiometers entirely counterclockwise to reset them.
+3. Rotate the wheel so that the IR sensor is entirely clear of any brake disk spokes.
+4. Check that the LED is lit up, if not there may be an issue with the board or too much ambient IR which will need different conditions for testing.
+5. Rotate the wheel so a spoke is directly in front of the IR sensor.
+6. Turn `THRES` clockwise to increase it until the LED turns off, remember this as the "low" mark.
+7. Spin the wheel and make sure that the LED is turning off with each passing of a spoke, and then back on again. Gradually increase `THRES` by turning it clockwise until the LED is no longer turning on again when the spoke is gone - this is the "high" mark.
+8. Set `THRES` to be halfway between the "low" and "high" mark. Spinning the wheel should have the LED flash again with each spoke pass.
+9. Keep spinning the wheel and increasing `HYST` by turning it clockwise.
+10. Once the LED is no longer changing state with the wheel's rotation, this it the "high" mark.
+11. Set `HYST` to be about halfway from the starting/zero point to the "high" mark.
+12. Spin the wheel to ensure that the LED is flashing again.
 
 This should roughly center the threshold correctly and provide a decent level of hysteresis. _It is impossible for the human eye to perceive the true effect of hysteresis with the LED alone, so we're basically just guessing this._
 
@@ -40,20 +41,21 @@ This should roughly center the threshold correctly and provide a decent level of
 
 The precise way to do this, no _major_ guesstimations here!
 
-1. Turn both potentiometers entirely clockwise to "reset" them
-2. Rotate the wheel so that the IR sensor is entirely clear of any brake disk spokes
-3. Check that the LED is lit up, if not there may be an issue with the board or too much ambient IR which will need different conditions for testing
-4. Read the voltage on the test point labeled `RAW`, this is our ambient level
-5. Rotate the wheel so that there is a spoke directly in front of the IR sensor
-6. Record the voltage on the test point labeled `RAW`, this is our presence level
-7. Gradually turn `THRES` potentiometer counterclockwise until the voltage on the test point labeled `THR` is halfway between the ambient and presence levels. _If the spoke is still in front of the IR sensor at this point, the LED should turn off._
-8. Spin the wheel to observe the LED turning on and off as the spoke passes
-9. Keep the wheel spinning and probe `OUT`
-10. Gradually increase `HYST` by turning the potentiometer counterclockwise until the signal on `OUT` shows a single pulse for each spoke pass, and then a sliver more - just not too much so that the LED stops lighting up
-    - If you're also able to probe the other two signals you should be able to see that `THR` is changing between two levels and that `RAW` should be able to cross `THR` only once per spoke passing
-    - `RAW` should continue to a level past `THR` after crossing it, so that even if `THR` didn't move `RAW` would not be causing potential switching with any sensor noise
-    - If the hysteresis gets too large then it might make it hard to catch occasional pulses leading to slower perceived speed
-11. Spin the wheel to ensure that the LED is flashing with each spoke passing
+1. Connect the target wheel board to an RPi HAT board and supply power to the HAT board to power the sensor board - battery or USB power is fine.
+2. _Gently_ turn both potentiometers entirely counterclockwise to "reset" them.
+3. Rotate the wheel so that the IR sensor is entirely clear of any brake disk spokes.
+4. Check that the LED is lit up, if not there may be an issue with the board or too much ambient IR which will need different conditions for testing.
+5. Read the voltage on the test point labeled `RAW`, this is our ambient level.
+6. Rotate the wheel so that there is a spoke directly in front of the IR sensor.
+7. Record the voltage on the test point labeled `RAW`, this is our presence level.
+8. Gradually turn `THRES` potentiometer until the voltage on the test point labeled `THR` is halfway between the ambient and presence levels. _If the spoke is still in front of the IR sensor at this point, the LED should turn off._
+9. Spin the wheel to observe the LED turning on and off as the spoke passes.
+10. Keep the wheel spinning and probe `OUT`.
+11. Gradually increase `HYST` by turning the potentiometer clockwise until the signal on `OUT` shows a single pulse for each spoke pass rather than a series of pulses during the transition. Then turn `HYST` a sliver more - just not too much so that the `OUT` stops switching
+    - If you're also able to probe the other two signals you should be able to see that `THR` is changing between two levels and that `RAW` should be able to cross `THR` only once per spoke passing.
+    - `RAW` should continue to a level past `THR` after crossing it, so that even if `THR` didn't move `RAW` would not be causing potential switching with any sensor noise.
+    - If the hysteresis gets too large then it might make it hard to catch occasional pulses leading to slower perceived speed.
+12. Spin the wheel to ensure that the LED is flashing with each spoke passing.
 
 ## Known IR Encoder Issue
 
