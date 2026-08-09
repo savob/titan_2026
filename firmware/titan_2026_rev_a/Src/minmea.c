@@ -812,7 +812,7 @@ bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPS
 
 	if (all_parsed_ok && summary->valid_position) {
 		// Calculating distance is pretty computationally intensive so only do it if we've got good new data
-		summary->distance_from_start_km = distance_km_between_coordinates(summary->start_latitude_deg, summary->start_longitude_deg, summary->latitude_deg, summary->latitude_deg);
+		summary->distance_from_start_km = distance_km_between_coordinates(summary->start_latitude_deg, summary->start_longitude_deg, summary->latitude_deg, summary->longitude_deg);
 	}
 	else summary->distance_from_start_km = 0;
 
