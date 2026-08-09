@@ -41,7 +41,7 @@ Whenever power is going to be removed from TITAN the following procedure should 
 > [!CAUTION]
 > Failure to follow this properly may damage the hardware or risk corrupting the data on the RPis.
 
-1. Press the power button (`PWR_RPi`) on the HAT
+1. Hold the power button (`PWR_RPi`) on the HAT for a few seconds until it starts shutting down
 2. Wait for the video feed to go off and the RPi to shut down properly
    - The video feed should disappear within seconds after the button is pressed, if not press the button again
    - Repeated presses of the off button will not adversely affect the system
@@ -61,7 +61,7 @@ My _(Savo's)_ preferred method to transfer data was to remove the RPi's micro SD
 Other options include network access or using the RPis as a normal desktop and a USB drive to ferry the data to another computer.
 
 >[!IMPORTANT]
-> To get to the desktop of a TITAN RPi one can press the RPi's power button (`PWR_RPi`) during operation of the vision system to stop the vision system.
+> To get to the desktop of a TITAN RPi one can _quickly_ tap the RPi's power button (`PWR_RPi`) during operation to stop the vision system so the terminal is made visible.
 
 If the button is not working, one can try to manually enter the following sequence of command blindly into the terminal with a keyboard to shut the vision system down. _Best of luck console cowboy!_
 

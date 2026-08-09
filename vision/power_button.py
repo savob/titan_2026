@@ -5,9 +5,10 @@
 #Use this script at your own risk
 
 import RPi.GPIO as GPIO
+from time import sleep
 import os
 
-gpio_pin_number=26
+gpio_pin_number=3
 #Replace YOUR_CHOSEN_GPIO_NUMBER_HERE with the GPIO pin number you wish to use
 #Make sure you know which rapsberry pi revision you are using first
 #The line should look something like this e.g. "gpio_pin_number=7"
@@ -22,11 +23,17 @@ GPIO.setup(gpio_pin_number, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #The pull-up resistor means the pin is high by default
 
 try:
-    GPIO.wait_for_edge(gpio_pin_number, GPIO.FALLING)
-    #Use falling edge detection to see if pin is pulled 
-    #low to avoid repeated polling
-    os.system("sudo shutdown -h now")
-    #Send command to system to shutdown
+    while (1): # Using a while loop to allow this script to repeatedly exit video system or shutdown later
+        GPIO.wait_for_edge(gpio_pin_number, GPIO.FALLING)
+        # Use falling edge detection to see if pin is pulled low to avoid repeated polling
+
+        sleep(3) # Allow user to tap for clearing screen or hold for power
+
+        # See if button is till held, trigger shut down
+        if GPIO.input(gpio_pin_number) == GPIO.LOW:
+            os.system("sudo shutdown -h now")
+        else: # Button was released, so a tap
+            os.system("sudo pkill bike; sudo pkill python")
 except:
     pass
 

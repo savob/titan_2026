@@ -21,10 +21,8 @@ import os
 print('!!!!!!!!!!!!!!!!!!!!!!!!!\n\nSTARTING UP TITAN SYSTEMS\n\n!!!!!!!!!!!!!!!!!!!!!!!!!\n')
 
 
-os.system('python ./power_off.py &')
-print('Started looking for safe shut down signal')
-os.system('python ./go_to_desktop.py &')
-print('Started looking for go to desktop signal')
+os.system('python ./power_button.py &')
+print('Monitoring RPi power button\n\tTap button to stop TITAN vision system\n\tHold button for a few seconds to safely shutdown the RPi')
 
 # Determine if it is main unit or not based on the presence of the ANT stick
 isFront = False # Assume false

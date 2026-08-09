@@ -8,8 +8,9 @@ The RPis are configured to boot this system automatically when powered by execut
 
 `titan_startup.py` then launches a series of other processes that collectively represent the TITAN vision system.
 
-- `power_off.py` is launched to watch for a press of the 'OFF' button and react accordingly
-- `go_to_desktop.py` watches for a press of the 'ON' button and shuts down the vision system to start the desktop environment (useful for development)
+- `power_button.py` watches for presses of the 'PWR' button
+  - If tapped briefly it merely stops the vision system (useful for development). Entering `startx` into terminal is then needed to start the desktop environment.
+  - If held for a few seconds it will shut down the RPi. Presing the button again will start the RPi.
 - `camera.py` starts the camera feed and camera recordings
 
 Once these are running, the startup script then responsible for determining whether the RPi is supposed to be the front or rear rider's system based on the presence or absence (respectively) of an ANT+ receiver, and launching the overlay program, `bike.bin`, accordingly by passing it the right arguments. 
