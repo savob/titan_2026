@@ -1,6 +1,6 @@
 #!/bin/python
 '''
-Start up script for TITAN 2022
+Start up script for TITAN 2026
 
 This script is called to set up the RPi for use. This has a few steps:
 1. Start safe shut down script
