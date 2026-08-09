@@ -36,13 +36,19 @@ void setup() {
         while (1) {}  // hold in infinite loop
     }
     
+    const int TIMEOUT_MS = 3000;
     // To set the radioNumber via the Serial monitor on startup
     Serial.println(F("Which radio is this? Enter '0' or '1'. Defaults to '0'"));
-    while (!Serial.available()) {
+    while (!Serial.available() && millis() < TIMEOUT_MS) {
         // wait for user input
     }
-    char input = Serial.parseInt();
-    radioNumber = input == 1;
+
+    if (millis() < TIMEOUT_MS) {
+        char input = Serial.parseInt();
+        radioNumber = input == 1;
+    }
+    else radioNumber = 0; // Default to RX
+
     Serial.print(F("radioNumber = "));
     Serial.println((int)radioNumber);
     
