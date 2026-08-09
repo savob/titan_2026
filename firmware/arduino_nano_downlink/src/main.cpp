@@ -63,9 +63,8 @@ void setup() {
     radio.clearStatusFlags(RF24_IRQ_ALL);
     radio.stopListening(address[radioNumber]);  // put radio in TX mode
     radio.setAutoAck(true);
-    radio.disableDynamicPayloads();
-    radio.setRetries(4, 15);
-    radio.setPayloadSize(4);
+    radio.enableDynamicPayloads();
+    radio.setRetries(2, 15);
  
     radio.openReadingPipe(1, address[!radioNumber]);  // using pipe 1
     
@@ -108,14 +107,15 @@ void loop() {
     
         uint8_t pipe;
         if (radio.available(&pipe)) {              // is there a payload? get the pipe number that received it
-            uint8_t bytes = radio.getPayloadSize();  // get the size of the payload
-            radio.read(&payload, bytes);             // fetch payload from FIFO
+            uint8_t bytes = radio.getDynamicPayloadSize();  // get the size of the payload
+            char rx_buffer[33] = {0}; // Ensure we can null-terminate the buffered 32 bytes
+            radio.read(rx_buffer, bytes);             // fetch payload from FIFO
             Serial.print(F("Received "));
             Serial.print(bytes);  // print the size of the payload
             Serial.print(F(" bytes on pipe "));
             Serial.print(pipe);  // print the pipe number
             Serial.print(F(": "));
-            Serial.println(payload);  // print the payload's value
+            Serial.println(rx_buffer);  // print the payload's value
         }
     }
 }

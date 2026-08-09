@@ -52,7 +52,7 @@ uint8_t nrf24_r_reg(struct NRFConfig radio, uint8_t reg){
 	uint8_t in_buffer[2];
 
 	csn_low(radio);
-	HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(radio.hspiX, out_buffer, in_buffer, 2, radio.spi_rw_timeout);
+	HAL_SPI_TransmitReceive(radio.hspiX, out_buffer, in_buffer, 2, radio.spi_rw_timeout);
 	csn_high(radio);
 
 	return in_buffer[1];
@@ -563,7 +563,7 @@ void nrf24_stop_const_carrier(){
 void nrf24_defaults(struct NRFConfig radio){
 	ce_low(radio);
 
-	nrf24_tx_pwr(radio, n6dbm);
+	nrf24_tx_pwr(radio, _0dbm);
 	nrf24_data_rate(radio, _1mbps);
 	nrf24_set_channel(radio, 76);
 	nrf24_set_crc(radio, en_crc, _2byte);
@@ -577,7 +577,7 @@ void nrf24_defaults(struct NRFConfig radio){
 	nrf24_dpl(radio, disable);
 	nrf24_en_ack_pld(radio, enable);
 	nrf24_en_dyn_ack(radio, disable);
-	nrf24_auto_retr_delay(radio, 4); // Delay is in increments of 250us
+	nrf24_auto_retr_delay(radio, 2); // Delay is in increments of 250us
 	nrf24_auto_retr_limit(radio, 15);
 
 	for(uint8_t i = 0; i < 6; i++){

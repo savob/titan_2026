@@ -252,13 +252,12 @@ int main(void)
 			.ce_gpio_pin = RF_EN_Pin,
 	};
 
+	// Configure radio for dynamic length payloads, although most will be the same legnth
 	nrf24_init(radio_ext, &MICROS_TIMER);
 
-	nrf24_pipe_pld_size(radio_ext, 0, PLD_S);
-	nrf24_pipe_pld_size(radio_ext, 1, PLD_S);
-
 	nrf24_open_tx_pipe(radio_ext, tx_addr);
-	nrf24_open_rx_pipe(radio_ext, 0, rx_addr);
+	nrf24_dpl(radio_ext, enable);
+	nrf24_set_rx_dpl(radio_ext, 0, enable);
 
 	nrf24_stop_listen(radio_ext);
 	ce_high(radio_ext);
@@ -307,9 +306,11 @@ int main(void)
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
 
-		float radio_out = ((float)HAL_GetTick()) / 1000.0;
-
-		nrf24_transmit(radio_ext, (uint8_t*) &radio_out, 4);
+		uint8_t test_buffer[] = "12345678901234567890123456789012345";
+		static uint8_t length = 1;
+		nrf24_transmit(radio_ext, test_buffer, length);
+		if (length >= 32) length = 1;
+		else length++;
 
 		HAL_Delay(500);
 	}
