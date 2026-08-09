@@ -588,12 +588,12 @@ void nrf24_defaults(struct NRFConfig radio){
 	}
 }
 
-void nrf24_init(struct NRFConfig radio, TIM_HandleTypeDef* us_timer){
+HAL_StatusTypeDef nrf24_init(struct NRFConfig radio, TIM_HandleTypeDef* us_timer){
 
 	if (micros_timer == NULL) {
 		micros_timer = us_timer;
 		if(HAL_TIM_Base_Start(micros_timer) != HAL_OK){
-			Error_Handler();
+			return HAL_ERROR;
 		}
 	}
 
@@ -611,10 +611,12 @@ void nrf24_init(struct NRFConfig radio, TIM_HandleTypeDef* us_timer){
 	HAL_Delay(10);
 	uint8_t test_returned = nrf24_r_reg(radio, TEST_REG);
 	if (test_expected != test_returned) {
-		printf("Failed to read back register on radio. Sent %02X got %02X\r\n", test_expected, test_returned);
-		Error_Handler();
+		printf("Failed to read back register 0x%02X on radio. Sent %02X got %02X\r\n", TEST_REG, test_expected, test_returned);
+		return HAL_ERROR;
 	}
 
 	nrf24_defaults(radio);
+
+	return HAL_OK;
 }
 

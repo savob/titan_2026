@@ -76,7 +76,7 @@ void nrf24_defaults(struct NRFConfig radio);
  * NOTICE: Without this function in start of program may cause problems after reseting MCU.
  * 		   MCU reset does not resets NRF24 module
  */
-void nrf24_init(struct NRFConfig radio, TIM_HandleTypeDef* us_timer);
+HAL_StatusTypeDef nrf24_init(struct NRFConfig radio, TIM_HandleTypeDef* us_timer);
 
 
 //These functions are for control CE and CSN pins which are selected in NRF24_conf.h

@@ -253,14 +253,20 @@ int main(void)
 	};
 
 	// Configure radio for dynamic length payloads, although most will be the same legnth
-	nrf24_init(radio_ext, &MICROS_TIMER);
+	ret = nrf24_init(radio_ext, &MICROS_TIMER);
+	const bool RADIO_PRESENT = ret == HAL_OK;
+	if (RADIO_PRESENT) {
+		nrf24_open_tx_pipe(radio_ext, tx_addr);
+		nrf24_dpl(radio_ext, enable);
+		nrf24_set_rx_dpl(radio_ext, 0, enable);
 
-	nrf24_open_tx_pipe(radio_ext, tx_addr);
-	nrf24_dpl(radio_ext, enable);
-	nrf24_set_rx_dpl(radio_ext, 0, enable);
-
-	nrf24_stop_listen(radio_ext);
-	ce_high(radio_ext);
+		nrf24_stop_listen(radio_ext);
+		ce_high(radio_ext);
+		printf("nRF24 detected and configured to broadcast\n\r");
+	}
+	else {
+		printf("nRF24 not detected, broadcasting will be disabled\n\r");
+	}
 
   /* USER CODE END 2 */
 
@@ -306,13 +312,32 @@ int main(void)
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
 
-		uint8_t test_buffer[] = "12345678901234567890123456789012345";
-		static uint8_t length = 1;
-		nrf24_transmit(radio_ext, test_buffer, length);
-		if (length >= 32) length = 1;
-		else length++;
+		static uint32_t next_broadcast_tick = 0;
+		const uint32_t BROADCAST_PERIOD_MS = 500;
+		const uint32_t CURRENT_TICK = HAL_GetTick();
+		if (CURRENT_TICK > next_broadcast_tick && RADIO_PRESENT) {
+			uint8_t trigger_message[] = "{"; // Constantly broadcast summary of TITAN
+			uint8_t radio_out[32];
+			uint16_t radio_out_length;
 
-		HAL_Delay(500);
+			enum MessageStatus status = process_message(&summary, trigger_message, 1, radio_out, sizeof(radio_out)/sizeof(radio_out[0]), &radio_out_length);
+			if (status == MESSAGE_PARSED_OK_SEND_RESPONSE) {
+				uint8_t radio_err = nrf24_transmit(radio_ext, radio_out, radio_out_length);
+#ifdef DEBUG
+				switch (radio_err) {
+					case 0: // OK
+						break;
+					case 1:
+						printf("Failed radio broadcast: too many retransmissions\r\n");
+						break;
+					default:
+						printf("Failed radio broadcast: %d\r\n", radio_err);
+						break;
+				}
+#endif
+			}
+			next_broadcast_tick = BROADCAST_PERIOD_MS + CURRENT_TICK;
+		}
 	}
   /* USER CODE END 3 */
 }
