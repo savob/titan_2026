@@ -301,14 +301,14 @@ void nrf24_set_bit(struct NRFConfig radio, uint8_t reg, uint8_t bit, uint8_t val
 }
 
 uint8_t nrf24_r_pld_wid(struct NRFConfig radio){
-	uint8_t width = 0;
+	uint8_t in_buffer[2];
+	uint8_t out_buffer[2] = {R_RX_PL_WID, 0};
 
 	csn_low(radio);
-	nrf24_w_spec_cmd(radio, R_RX_PL_WID);
-	nrf24_r_spec_reg(radio, &width, 1);
+	HAL_SPI_TransmitReceive(radio.hspiX, out_buffer, in_buffer, 2, radio.spi_rw_timeout);
 	csn_high(radio);
 
-	return width;
+	return in_buffer[2];
 }
 
 void nrf24_listen(struct NRFConfig radio){
@@ -529,11 +529,18 @@ uint8_t nrf24_data_available(struct NRFConfig radio){
 
 void nrf24_receive(struct NRFConfig radio, uint8_t *data, uint8_t size){
 	uint8_t cmd = R_RX_PAYLOAD;
+	uint8_t out_buffer[size + 1];
+	uint8_t in_buffer[size + 1];
+	out_buffer[0] = cmd;
+	memcpy(&out_buffer[1], data, size);
 
 	csn_low(radio);
-	HAL_SPI_Transmit(radio.hspiX, &cmd, 1, radio.spi_w_timeout);
-	HAL_SPI_Receive(radio.hspiX, data, size, radio.spi_r_timeout);
+	HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(radio.hspiX, out_buffer, in_buffer, size + 1, radio.spi_rw_timeout);
 	csn_high(radio);
+
+	if (ret == HAL_OK) {
+		memcpy(data, &in_buffer[1], size);
+	}
 
 	nrf24_clear_rx_dr(radio);
 }
