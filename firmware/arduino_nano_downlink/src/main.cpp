@@ -16,7 +16,7 @@ uint8_t address[][6] = { "1Node", "2Node" };
  
 // to use different addresses on a pair of radios, we need a variable to
 // uniquely identify which address this radio will use to transmit
-bool radioNumber = 1;  // 0 uses address[0] to transmit, 1 uses address[1] to transmit
+bool radioNumber = 1;  // 0 uses address[0] to transmit, 1 uses address[1] to transmit, 0 is RX, 1 to tx
  
 // For this example, we'll be using a payload containing
 // a single float number that will be incremented
@@ -36,9 +36,6 @@ void setup() {
         while (1) {}  // hold in infinite loop
     }
     
-    // print example's introductory prompt
-    Serial.println(F("RF24/examples/GettingStarted"));
-    
     // To set the radioNumber via the Serial monitor on startup
     Serial.println(F("Which radio is this? Enter '0' or '1'. Defaults to '0'"));
     while (!Serial.available()) {
@@ -52,16 +49,18 @@ void setup() {
     // Set the PA Level low to try preventing power supply related problems
     // because these examples are likely run with nodes in close proximity to
     // each other.
-    radio.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default.
+    radio.setPALevel(RF24_PA_HIGH);  // RF24_PA_MAX is default.
     
-    // save on transmission time by setting the radio to only transmit the
-    // number of bytes we need to transmit a float
-    radio.setPayloadSize(sizeof(payload));  // float datatype occupies 4 bytes
-    
-    // set the TX address of the RX node for use on the TX pipe (pipe 0)
+    radio.setDataRate(RF24_1MBPS);
+    radio.setChannel(76);
+    radio.setAddressWidth(5);
+    radio.clearStatusFlags(RF24_IRQ_ALL);
     radio.stopListening(address[radioNumber]);  // put radio in TX mode
-    
-    // set the RX address of the TX node into a RX pipe
+    radio.setAutoAck(true);
+    radio.disableDynamicPayloads();
+    radio.setRetries(4, 15);
+    radio.setPayloadSize(4);
+ 
     radio.openReadingPipe(1, address[!radioNumber]);  // using pipe 1
     
     // additional setup specific to the node's RX role
@@ -85,14 +84,14 @@ void loop() {
         unsigned long end_timer = micros();                  // end the timer
      
         if (report) {
-        Serial.print(F("Transmission successful! "));  // payload was delivered
-        Serial.print(F("Time to transmit = "));
-        Serial.print(end_timer - start_timer);  // print the timer result
-        Serial.print(F(" us. Sent: "));
-        Serial.println(payload);  // print payload sent
-        payload += 0.01;          // increment float payload
+            Serial.print(F("Transmission successful! "));  // payload was delivered
+            Serial.print(F("Time to transmit = "));
+            Serial.print(end_timer - start_timer);  // print the timer result
+            Serial.print(F(" us. Sent: "));
+            Serial.println(payload);  // print payload sent
+            payload += 0.01;          // increment float payload
         } else {
-        Serial.println(F("Transmission failed or timed out"));  // payload was not delivered
+            Serial.println(F("Transmission failed or timed out"));  // payload was not delivered
         }
     
         // to make this example readable in the serial monitor
@@ -103,14 +102,14 @@ void loop() {
     
         uint8_t pipe;
         if (radio.available(&pipe)) {              // is there a payload? get the pipe number that received it
-        uint8_t bytes = radio.getPayloadSize();  // get the size of the payload
-        radio.read(&payload, bytes);             // fetch payload from FIFO
-        Serial.print(F("Received "));
-        Serial.print(bytes);  // print the size of the payload
-        Serial.print(F(" bytes on pipe "));
-        Serial.print(pipe);  // print the pipe number
-        Serial.print(F(": "));
-        Serial.println(payload);  // print the payload's value
+            uint8_t bytes = radio.getPayloadSize();  // get the size of the payload
+            radio.read(&payload, bytes);             // fetch payload from FIFO
+            Serial.print(F("Received "));
+            Serial.print(bytes);  // print the size of the payload
+            Serial.print(F(" bytes on pipe "));
+            Serial.print(pipe);  // print the pipe number
+            Serial.print(F(": "));
+            Serial.println(payload);  // print the payload's value
         }
     }
 }
