@@ -73,7 +73,11 @@ volatile uint16_t stm_message_length = 0;
 
 const uint32_t I2C_TIMEOUT = 10; // Timeout to be used for I2C interactions
 
-volatile struct TitanSummary summary = {0};
+volatile struct TitanSummary summary __attribute__((noinit)); // Preserve data in RAM between boots
+
+// Starting point latitude
+const float STARTING_LONGITUDE = -117.043375;
+const float STARTING_LATITUDE = 40.393598;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,7 +119,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	const uint32_t RESET_CODES = RCC->CSR; // Record before they might get cleared
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -131,7 +135,18 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  	RCC->CSR = RCC->CSR | RCC_CSR_RMVF; // Clear reset cause for the next run
 
+  	// Check to preserve to ensure data is kept rather than only if it should be cleared since the two may overlap
+  	const uint32_t RESETS_TO_PRESERVE_DATA_MASK = RCC_CSR_IWDGRSTF | RCC_CSR_WWDGRSTF | RCC_CSR_SFTRSTF;
+  	const bool PRESERVE_DATA = (RESET_CODES & RESETS_TO_PRESERVE_DATA_MASK) != 0;
+	if (!PRESERVE_DATA) {
+		memset(&summary, 0, sizeof(summary));
+
+    // Non-zero default values
+		summary.gps.start_latitude_deg = STARTING_LATITUDE;
+		summary.gps.start_longitude_deg = STARTING_LONGITUDE;
+	}
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -152,7 +167,9 @@ int main(void)
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
-	printf("\r\n==========================\r\nStarting up TITAN 2026\r\n");
+	printf("\r\n=========================================\r\n           Starting TITAN 2026\r\n=========================================\r\n");
+	if (PRESERVE_DATA) printf("\tData preserved (watchdog reset)\r\n");
+	else printf("\tData cleared to defaults\r\n");
 
 	// Start timers once everything's initialized properly
 	HAL_TIM_IC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_1);
