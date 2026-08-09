@@ -27,6 +27,7 @@
 #include "minmea.h"
 #include "titan_data.h"
 #include "communication.h"
+#include "../Drivers/stm32_hal_nrf24_library/NRF24.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,6 +57,7 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart5;
@@ -78,6 +80,11 @@ volatile struct TitanSummary summary __attribute__((noinit)); // Preserve data i
 // Starting point latitude
 const float STARTING_LONGITUDE = -117.043375;
 const float STARTING_LATITUDE = 40.393598;
+
+#define PLD_S 4
+
+uint8_t rx_addr[5] = {'1', 'N', 'o', 'd', 'e'};
+uint8_t tx_addr[5] = {'2', 'N', 'o', 'd', 'e'};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -96,6 +103,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_IWDG_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
@@ -165,6 +173,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_IWDG_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 	setbuf(stdin, NULL); //TO HANDLE INPUT BUFFER WHEN USING SCANF/COUT IN C++
 	printf("\r\n=========================================\r\n           Starting TITAN 2026\r\n=========================================\r\n");
@@ -229,6 +238,31 @@ int main(void)
 
 	ret = setup_interface(&primary);
 	ret = setup_interface(&secondary);
+
+	struct NRFConfig radio_ext = {
+			.hspiX = &RADIO_SPI,
+			.spi_w_timeout = 1000,
+			.spi_r_timeout = 1000,
+			.spi_rw_timeout = 1000,
+
+			.csn_gpio_port = RF_CS_GPIO_Port,
+			.csn_gpio_pin = RF_CS_Pin,
+
+			.ce_gpio_port = RF_EN_GPIO_Port,
+			.ce_gpio_pin = RF_EN_Pin,
+	};
+
+	nrf24_init(radio_ext, &MICROS_TIMER);
+
+	nrf24_pipe_pld_size(radio_ext, 0, PLD_S);
+	nrf24_pipe_pld_size(radio_ext, 1, PLD_S);
+
+	nrf24_open_tx_pipe(radio_ext, tx_addr);
+	nrf24_open_rx_pipe(radio_ext, 0, rx_addr);
+
+	nrf24_stop_listen(radio_ext);
+	ce_high(radio_ext);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -272,6 +306,12 @@ int main(void)
 
 		ret = operate_interface(&primary, &summary);
 		ret = operate_interface(&secondary, &summary);
+
+		float radio_out = ((float)HAL_GetTick()) / 1000.0;
+
+		nrf24_transmit(radio_ext, (uint8_t*) &radio_out, 4);
+
+		HAL_Delay(500);
 	}
   /* USER CODE END 3 */
 }
@@ -447,8 +487,8 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -785,6 +825,44 @@ static void MX_TIM4_Init(void)
 }
 
 /**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 71;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 65535;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
   * @brief UART4 Initialization Function
   * @param None
   * @retval None
@@ -954,19 +1032,35 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RF_CS_GPIO_Port, RF_CS_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RF_EN_GPIO_Port, RF_EN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : ROLE_Pin RF_INT_Pin */
-  GPIO_InitStruct.Pin = ROLE_Pin|RF_INT_Pin;
+  /*Configure GPIO pin : ROLE_Pin */
+  GPIO_InitStruct.Pin = ROLE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(ROLE_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : RF_CS_Pin */
+  GPIO_InitStruct.Pin = RF_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(RF_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : RF_INT_Pin */
+  GPIO_InitStruct.Pin = RF_INT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(RF_INT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RF_EN_Pin */
   GPIO_InitStruct.Pin = RF_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(RF_EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DHT_Pin */

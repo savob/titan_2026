@@ -64,27 +64,30 @@ void summarize_wheel_data(volatile struct TitanSummary* summary);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define DEBUG_UART huart4
-#define GPS_UART huart1
+#define REAR_ENC_TIMER htim1
 #define PRIM_UART huart2
+#define DEBUG_UART huart4
+#define CO2_TIMER htim4
+#define FRONT_ENC_TIMER htim2
+#define GPS_UART huart1
+#define LED_TIMER htim3
 #define SEC_UART huart5
 #define WHEEL_I2C hi2c1
 #define MAIN_I2C hi2c2
 #define RADIO_SPI hspi1
-#define LED_TIMER htim3
-#define REAR_ENC_TIMER htim1
-#define CO2_TIMER htim4
-#define FRONT_ENC_TIMER htim2
+#define MICROS_TIMER htim6
 #define ROLE_Pin GPIO_PIN_15
 #define ROLE_GPIO_Port GPIOC
 #define MAIN_RX_Pin GPIO_PIN_2
 #define MAIN_RX_GPIO_Port GPIOA
 #define MAIN_TX_Pin GPIO_PIN_3
 #define MAIN_TX_GPIO_Port GPIOA
-#define RF_EN_Pin GPIO_PIN_4
-#define RF_EN_GPIO_Port GPIOC
-#define RF_INT_Pin GPIO_PIN_5
+#define RF_CS_Pin GPIO_PIN_4
+#define RF_CS_GPIO_Port GPIOA
+#define RF_INT_Pin GPIO_PIN_4
 #define RF_INT_GPIO_Port GPIOC
+#define RF_EN_Pin GPIO_PIN_5
+#define RF_EN_GPIO_Port GPIOC
 #define SCL_Pin GPIO_PIN_10
 #define SCL_GPIO_Port GPIOB
 #define SDA_Pin GPIO_PIN_11
