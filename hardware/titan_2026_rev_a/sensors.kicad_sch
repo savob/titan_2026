@@ -1879,7 +1879,7 @@
 		)
 		(uuid "054feadd-f511-441b-b584-01ef2ce11862")
 	)
-	(text "Measures CO_{2} up to 5000ppm"
+	(text "Measures CO_{2} up to 5000ppm\nSCD-40 can be used for up to 2000ppm"
 		(exclude_from_sim no)
 		(at 52.07 73.66 0)
 		(effects
@@ -1890,7 +1890,7 @@
 		)
 		(uuid "08c1cab3-05d3-43ab-8c80-39a639032bf3")
 	)
-	(text "All wheel signals are 5V!"
+	(text "All wheel signals can be 5V!"
 		(exclude_from_sim no)
 		(at 85.09 156.21 0)
 		(effects
@@ -1925,9 +1925,9 @@
 		)
 		(uuid "4ac842d6-ec5f-43c6-b9d9-f512f2d0e2bb")
 	)
-	(text "I^{2}C addesses are 0x02 and 0x03"
+	(text "I^{2}C addesses programmable.\nIn 2022 front was 0x01 and rear was 0x02."
 		(exclude_from_sim no)
-		(at 85.09 158.75 0)
+		(at 85.09 160.02 0)
 		(effects
 			(font
 				(size 1.27 1.27)
