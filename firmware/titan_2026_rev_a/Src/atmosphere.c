@@ -39,7 +39,10 @@ HAL_StatusTypeDef atmo_setup(I2C_HandleTypeDef* bus, uint32_t i2c_timeout_ms) {
 	ret = scd4x_setup(bus, i2c_timeout_ms);
 	scd_available = ret == HAL_OK;
 	if (ret == HAL_OK) printf("SCD41 setup success\n\r");
-	else printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret);
+	else {
+		printf("SCD41 setup failed, error code: %d. SCD sensor will NOT be used for CO2.\n\r", ret);
+		// Not bothering to mark this as an error because it isn't severe, likely using off board sensor
+	}
 
 	bosch_adjust_i2c_timeout(i2c_timeout_ms);
 	bme280_interface.i2c_handle = bus;

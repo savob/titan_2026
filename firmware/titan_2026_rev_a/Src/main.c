@@ -85,6 +85,9 @@ const float STARTING_LATITUDE = 40.393598;
 
 uint8_t rx_addr[5] = {'1', 'N', 'o', 'd', 'e'};
 uint8_t tx_addr[5] = {'2', 'N', 'o', 'd', 'e'};
+
+const uint8_t LED_ERROR = 1;
+const uint8_t LED_GPS = 2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,7 +119,47 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static HAL_StatusTypeDef led_set_duty(uint8_t led, uint16_t duty) {
+	TIM_OC_InitTypeDef sConfigOC = {0};
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = duty;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
+	switch (led) {
+	case 1:
+		return HAL_TIM_PWM_ConfigChannel(&LED_TIMER, &sConfigOC, TIM_CHANNEL_1);
+	case 2:
+		return HAL_TIM_PWM_ConfigChannel(&LED_TIMER, &sConfigOC, TIM_CHANNEL_2);
+	case 3:
+		return HAL_TIM_PWM_ConfigChannel(&LED_TIMER, &sConfigOC, TIM_CHANNEL_3);
+	default:
+		return HAL_ERROR; // Unrecognized LED number
+	}
+
+	return HAL_ERROR; // This shouldn't ever be reached
+}
+
+static HAL_StatusTypeDef led_sawtooth(uint8_t led) {
+	if (led < 1 || led > 3) return HAL_ERROR;
+
+	static uint32_t next_tick[3] = {0, 0, 0};
+	static uint32_t current_duty[3] = {0, 0, 0};
+	const uint32_t INCREMENT_PERIOD_TICKS[3] = {10, 10, 10};
+	const uint16_t MAX_DUTY[3] = {UINT16_MAX / 128, UINT16_MAX, UINT16_MAX};
+	const uint16_t DUTY_INCREMENT[3] = {UINT16_MAX / (128 * 500), UINT16_MAX / 200, UINT16_MAX / 200};
+
+	const uint32_t CURRENT_TICK = HAL_GetTick();
+
+	if (CURRENT_TICK < next_tick[led]) return HAL_OK;
+
+	next_tick[led] = CURRENT_TICK + INCREMENT_PERIOD_TICKS[led];
+
+	current_duty[led] = current_duty[led] + DUTY_INCREMENT[led];
+	if (current_duty[led] >= MAX_DUTY[led]) current_duty[led] = 0;
+
+	return led_set_duty(led, current_duty[led]);
+}
 /* USER CODE END 0 */
 
 /**
@@ -180,6 +223,9 @@ int main(void)
 	if (PRESERVE_DATA) printf("\tData preserved (watchdog reset)\r\n");
 	else printf("\tData cleared to defaults\r\n");
 
+	bool non_critical_error = false;
+	bool critical_error = false;
+
 	// Start timers once everything's initialized properly
 	HAL_TIM_IC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_1);
 	HAL_TIM_OC_Start_IT(&REAR_ENC_TIMER, TIM_CHANNEL_2);
@@ -191,10 +237,13 @@ int main(void)
 
 	HAL_StatusTypeDef ret;
 	ret = setup_battery_monitoring(&MAIN_I2C, I2C_TIMEOUT);
+	if (ret != HAL_OK) non_critical_error = true;
 
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
+	if (ret != HAL_OK) non_critical_error = true;
 
 	ret = setup_brake_disk_sensors(&MAIN_I2C, I2C_TIMEOUT);
+	if (ret != HAL_OK) non_critical_error = true;
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
 	char gps_buffer[GPS_BUFFER_SIZE] = {};
@@ -237,7 +286,9 @@ int main(void)
 	HAL_UART_Receive_DMA(&GPS_UART, (uint8_t*) gps_buffer, GPS_BUFFER_SIZE);
 
 	ret = setup_interface(&primary);
+	if (ret != HAL_OK) critical_error = true;
 	ret = setup_interface(&secondary);
+	if (ret != HAL_OK) critical_error = true;
 
 	struct NRFConfig radio_ext = {
 			.hspiX = &RADIO_SPI,
@@ -252,7 +303,7 @@ int main(void)
 			.ce_gpio_pin = RF_EN_Pin,
 	};
 
-	// Configure radio for dynamic length payloads, although most will be the same legnth
+	// Configure radio for dynamic length payloads, although most will be the same length
 	ret = nrf24_init(radio_ext, &MICROS_TIMER);
 	const bool RADIO_PRESENT = ret == HAL_OK;
 	if (RADIO_PRESENT) {
@@ -266,14 +317,24 @@ int main(void)
 	}
 	else {
 		printf("nRF24 not detected, broadcasting will be disabled\n\r");
+		non_critical_error = true;
 	}
 
+	if (critical_error) {
+		Error_Handler();
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
 		HAL_IWDG_Refresh(&hiwdg);
+
+		if (non_critical_error) {
+//			led_set_duty(ERROR_LED, UINT16_MAX / 128); // Dim red if systems are diminished but functioning
+			led_sawtooth(LED_ERROR); // Cycle error LED slowly
+		}
+		else led_set_duty(LED_ERROR, 0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -307,6 +368,12 @@ int main(void)
 			// Next message will start after newline
 			gps_message_start_index = last_gps_written_index + 1;
 			if (gps_message_start_index >= GPS_BUFFER_SIZE) gps_message_start_index = 0;
+		}
+		if (summary.gps.valid_position) {
+			led_set_duty(LED_GPS, UINT16_MAX);
+		}
+		else {
+			led_sawtooth(LED_GPS);
 		}
 
 		ret = operate_interface(&primary, &summary);
