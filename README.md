@@ -12,11 +12,12 @@ There is an additional redundant video system for the front rider based on analo
 
 The repository is split into folders based on function.
 
-Folder | Purpose
------- | -------
-`hardware` | Hardware files for our circuit boards
-`firmware` | Code for the embedded systems (STM32)
-`vision` | Code used to operate the video system
+| Folder | Purpose |
+| --- | --- |
+| `documentation` | Collected MarkDown files detailing various parts of running TITAN |
+| `firmware` | Code for the embedded systems, namely the RPi HAT |
+| `hardware` | Hardware files for our circuit boards |
+| `vision` | Code used to operate the video system on the RPi |
 
 ## Hardware
 
