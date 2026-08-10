@@ -1,6 +1,9 @@
 # TITAN 2026 Code
 
-THis is the code meant to operate the entire system. It is meant to be flashed onto bothe boards present in the bike, regardless of position, they will determine their role based on the connections made to them on boot and act appropriately for their role.
+This is the code meant to operate the entire system. It is meant to be flashed onto bothe boards present in the bike, regardless of position, they will determine their role based on the connections made to them on boot and act appropriately for their role. This firmware was written to provide a transparent replacement for the original 2022 system, so the vision systems can interact with it just like they did with the previous board.
+
+>[!NOTE]
+> The only major difference is from the previous firmware is that **we are completely ignoring the DHT11 sensor** as it is very slow to update and requires a long blocking read which would ruin the general responsiveness of TITAN. In its place there is an on board [BME280](https://www.bosch-sensortec.com/en/products/environmental-sensors/humidity-sensors-bme280) sensor to provide the same data in a much faster way, the only downside is that by being mounted on the board it will not be able to accurately measure the outside environment and it'll likely deal with self-heating from the RPi underneath it.
 
 ## Primary Role (Front Rider)
 
@@ -17,26 +20,22 @@ When the microcontroller determines it is serving on the secondary system is sim
 
 ## Status LEDs
 
-There are three status LEDs located centrally on the board used for various purposes. They are labelled `STATx`, `STAT1` is red while `STAT2` and `STAT3` are white. All these LEDs can be dimmed.
-
->[!TIP]
->The same status LED state may indicate different things depending on the microcontroller's role so be aware of what role a board will have before trying to decipher their status LED meaning.
-
-Below is a table summarizing various status LED states. If "X" is used then that light doesn't matter to communicate something - for example with non-critical errors.
+There are three status LEDs located centrally on the board used for various purposes. They are labelled `STATx`, `STAT1` is red while `STAT2` and `STAT3` are white. All these LEDs can be dimmed. Below is a table summarizing various status LED states. If "X" is used then that light doesn't matter to communicate something - for example with non-critical errors. When an LED is "cycling" it is gradually brightening up to a point where it turns off and restarts; the brightness effectively following a sawtooth pattern.
 
 | `STAT1` (Red) | `STAT2` (White) | `STAT3` (White) | Meaning |
 | :---: | :---: | :---: | :--- |
-| Flashing at 5 Hz | OFF | OFF | Critical error encountered, **microcontroller will reboot momentarily!** _Note: this will not interrupt the video systems._ |
-| Cycling dimmly | X | X | Non-critical issue found, sensor system will continue to fulfil its role in a dimished state. _A sensor might be disconnected._ |
-| OFF | X | X | No issues observed in by this board as this role. |
-| X | OFF | ON | Board detected role as secondary board. |
-| X | Cycling | ON | Board is operating as primary system, **GPS lock in progress.** |
-| X | ON | ON | Board is operating as primary system, **GPS lock completed.** |
+| Flashing Quickly | OFF | OFF | **Critical error encountered, microcontroller will reboot momentarily!** _Note: this will not interrupt the video systems._ |
+| Cycling dimmly | X | X | **Non-critical issue encountered**, sensor system will continue to fulfil its role in a dimished state. _A sensor might be disconnected._ |
+| OFF | X | X | **No issues detected** in by this board as this role. |
+| X | OFF | ON | Board is operating as the **secondary board**. |
+| X | Cycling | ON | Board is operating as the **primary system, GPS lock in progress.** |
+| X | ON | ON | Board is operating as the **primary system, GPS lock completed.** |
 
 ## Potential Improvements
 
 The code as is, can function as a drop in replacement for the 2022 boards (with modified connectors). There are a few minor features or improvemetns that are being considered for future firmware versions:
 
+- [ ] Autodetect the SCD-4x variant used on the board, and add altitude adjustment
+- [ ] Add system to adjust the readings from BME280 to approximate the exterior if desired
 - [ ] Have the secondary board firmware check if it can find the INA219 IC on the bus to alert users to inproper configuration somehow
 - [ ] Make use of the USB connection perhaps for additional debugging interface
-- [ ] Autodetect the SCD-4x variant used on the board, and add altitude adjustment
