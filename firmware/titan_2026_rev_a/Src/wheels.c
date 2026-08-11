@@ -13,7 +13,8 @@
 #include "stm32f1xx_hal.h"
 #include <stdio.h>
 
-static const float BRAKE_DISK_EMISSIVITY = 0.9; // Should be between 0 and 1.0
+// static const float BRAKE_DISK_EMISSIVITY = 0.6; // Should be between 0 and 1.0, 0.6 for stainless steel in 2022
+static const float BRAKE_DISK_EMISSIVITY = 0; // Use the value store in the sensor, recommended to avoid needing the system to reboot the sensors
 
 // MLX sensors default to 0x5A (90)
 static const uint8_t FRONT_ADDRESS = 0x01;
