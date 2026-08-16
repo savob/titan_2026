@@ -37,8 +37,12 @@ The overlay code is the main product of this folder, and written in C. It is spl
 
 The code can be edited on the RPi itself, and this is fine for any small tweaks such as some hardcoded constants like wheel radius. However for any larger changes it will likely be easier to offload the editing onto a more capable computer to then copy the changed source code onto an RPi. The exact method to do this is up to you, but I generally opted to move the SD card between the RPi and my laptop.
 
+### Compiling the Overlay Code
+
+With any changes to the overlay source code, one will need to compile a new `bike.bin` for them to take effect.
+
 >[!IMPORTANT]
-> Regardless of how the code is edited, it **must be compiled on an RPi 3 itself**. This is because overlay code makes use of low level video drivers (VideoCore) for the Broadcom chip that runs the RPi 3 computers, as well as some specific features for some timing code. It is for this reason that many of the `#include` statements and constants will likely be flagged as errors on a non-RPi computer.
+> Regardless of how the code is edited, it **MUST be compiled on an RPi 3 itself**. This is because overlay code makes use of low level video drivers (VideoCore) for the Broadcom chip that runs the RPi 3 computers, as well as some specific features for some timing code. It is for this reason that many of the `#include` statements and constants will likely be flagged as errors on a non-RPi computer.
 
 The compilation process is based on using a `Makefile` so to generate a new `bike.bin` simply execute the following command in this folder.
 

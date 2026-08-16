@@ -2,7 +2,7 @@
 #define POWER_AVERAGE_FRAMES 50 // Needs to be #define for array sizes
 
 int overlay_frames_to_render = -1; // Number of frames to render for testing (-1 for infinite)
-const float WHEEL_CIRCUMFERENCE_M = 2.104;
+const float WHEEL_CIRCUMFERENCE_M = 2.136;
 
 // Serial configuration
 bool using_serial_data = false; // Use serial or not
