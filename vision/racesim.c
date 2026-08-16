@@ -1,15 +1,15 @@
 #include "racesim.h"
 
 /*INPUT:
-Rf,Rr - radii of the front and rear wheels (m)
+radius_front_m,radius_rear_m - radii of the front and rear wheels (m)
 If,Ir - Inertia of the front and rear wheels (kg*m^2)
-M - mass of the bike/rider system (kg)
+m_total_kg - mass of the bike/rider system (kg)
 PFcn - power as a function of x (position on the course) (W)
 rho - air density (kg/m^3)
-RefLen - length of the vehicle used for Re calcs (m)
+vehicle_reference_length_m - length of the vehicle used for Re calcs (m)
 CdA_Fcn - drag area as  a function of Re (m^2)
 Crr - rolling resistance coeff.
-eta - drivetrain efficiency
+eta_drivetrain - drivetrain efficiency
 MaxLeanAng - maximum lean angle in turns (deg.)
 TimeDurationGuess - estimate of longest time it would take to complete
       the course (be conservative) (sec.)
@@ -32,20 +32,20 @@ static float Re(float xp);
 static float slopePolynomial(float distance);
 
 // Bike Mass and geometry parameters
-static const float Rf = 0.255;
-static const float Rr = 0.255;
-static const float Mf = 2.5;
-static const float Mr = 2.5;
-static const float If = 0.0197492333611; // (Mf-0.200)*(Rf-25e-3)^2;
-static const float Ir = 0.0197492333611;
-static const float Mframe = 40 - Mf - Mr; // everything except the wheels
-static const float Mrider = 145;
-static const float M = Mf + Mr + Mframe + Mrider;
-static const float MI = M + If / (Rf * Rf) + Ir / (Rr * Rr);
-static const float RefLen = 3.4;
+static const float radius_front_m = 0.255;
+static const float radius_rear_m = 0.255;
+static const float m_front_wheel_kg = 2.5;
+static const float m_rear_wheel_kg = 2.5;
+static const float If = (m_front_wheel_kg-0.200)*(radius_front_m-25e-3)*(radius_front_m-25e-3);
+static const float Ir = (m_rear_wheel_kg-0.200)*(radius_rear_m-25e-3)*(radius_rear_m-25e-3);
+static const float m_frame_kg = 40.0 - m_front_wheel_kg - m_rear_wheel_kg; // TITAN except the wheels
+static const float m_riders_kg = 145.0;
+static const float m_total_kg = m_front_wheel_kg + m_rear_wheel_kg + m_frame_kg + m_riders_kg;
+static const float MI = m_total_kg + If / (radius_front_m * radius_front_m) + Ir / (radius_rear_m * radius_rear_m);
+static const float vehicle_reference_length_m = 3.4;
 
-static const float g = 9.81;	// Gravitational acceleration (m/s^2)
-static const float W = g*M;  	// Weight (N)
+static const float g_m_s2 = 9.81;	// Gravitational acceleration (m/s^2)
+static const float weight_n = g_m_s2*m_total_kg;  	// Weight (N)
 
 // Bike Drag Parameters
 static const float rho = 0.95;
@@ -54,22 +54,22 @@ static const float nu = mu / rho;   // Kinematic viscosity
 static const float xpRef = 130 / 3.6; // reference velocity for CdA_Ref
 static const float CdA_Valkyrie = 0.014 * 1.7; // [m^2] 
 static const float CdA_Ref = 1.0 * CdA_Valkyrie;
-static const float ReRef = xpRef * rho * RefLen / mu;
-static const float L2nu = RefLen / nu;  // Used in Reynolds
+static const float ReRef = xpRef * rho * vehicle_reference_length_m / mu;
+static const float L2nu = vehicle_reference_length_m / nu;  // Used in Reynolds
 
 // Rolling resistance parameters/function
 static const float Crr1 = 0.0018; // 0.0023 * 0.4 + 0.0039 * 0.6; 
 static const float Crr2 = 0.000005; // 0.000064 * 0.6; // 0.000064 for Pro One, 0 for GP Custom
-static const float eta = 0.97; // Drive train efficiency
+static const float eta_drivetrain = 0.97; // Drive train efficiency
 
 // Simulation parameters
-static const float distanceEnd = 8000; // Distance to end
+static const float distance_end_m = 8000; // Distance to end
 
 // Power Setup
-static const float p_runup = 290; // W
-static const float p_sprint = 490; // W
-static const float sprint_start_mark = 1.25; // mile marker from finish
-static const float sprint_start = (5*1600)-(sprint_start_mark*1600); // m
+static const float p_runup_w = 290; // For both riders
+static const float p_sprint_w = 490; // For both riders
+static const float sprint_start_mile_mark = 1.25; // mile marker from finish
+static const float sprint_start_m = (5.0*1600.0)-(sprint_start_mile_mark*1600.0);
 
 static float Re(float xp) {
 	return (xp * L2nu);
@@ -80,9 +80,9 @@ static float Cd_flatplate(float re) {
     float cd = 0.074 * pow(re, -0.2);
 
     // Return minimum between cd and a threshold
-    const float cdThreshold = 0.01;
-    if (cd < cdThreshold) return cd;
-    else return cdThreshold;
+    const float Cd_MINIMUM_THRESHOLD = 0.01;
+    if (cd < Cd_MINIMUM_THRESHOLD) return cd;
+    else return Cd_MINIMUM_THRESHOLD;
 }
 
 static float CdA_Fcn(float Re) {
@@ -96,8 +96,8 @@ static float Crr(float xp) {
 
 static float PFcn(float dist) {
     // Return sprint power if in sprint region
-    if (dist < sprint_start) return p_runup;
-    else return p_sprint;
+    if (dist < sprint_start_m) return p_runup_w;
+    else return p_sprint_w;
 }
 
 static float slopePolynomial(float distance) {
@@ -106,107 +106,97 @@ static float slopePolynomial(float distance) {
     return slope;
 }
 
-void RaceSimV3_WHPSC_complete(float initialSpeed, bool recordSimulation) {
-
-    // Ensure proper input and other constants
-    const float stepDuration = 0.005;
-    
+void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE) {
     // Run time-marching algorithm
-    // initialize X
-    float currX[] = {0, initialSpeed}; // displacement velocity
-    int step = 0; //keep track of steps
+    const float step_duration_s = 0.005;
+    float current_speed_m_s = initial_speed_m_s;
+    float current_distance_m = 0;
+    int step = 0;
     
-    FILE * logFile;
-	if (recordSimulation == true) {
-        logFile = fopen("./testlog.csv", "w+");
-        fprintf(logFile, "Time,Position (m),Speed (m/s),Charge,Ppassive (w),Paero,Prolling,Pslope\n");
-        fprintf(logFile, "%.3f,%f,%f,0,0,0,0,0\n", step*stepDuration, currX[0], currX[1]);
-        fclose(logFile);
+    FILE * log_file;
+	if (RECORD_TO_FILE) {
+        log_file = fopen("./testlog.csv", "w+");
+        fprintf(log_file, "Time,Position (m),Speed (m/s),Charge,Passive power(w),Aero Power,Rolling Power,Slope Power\n");
+        fprintf(log_file, "%.3f,%f,%f,0,0,0,0,0\n", step*step_duration_s, current_distance_m, current_speed_m_s);
+        fclose(log_file);
     }
     
-    while (currX[0] < distanceEnd) {
-        float x = currX[0]; //position
-        float xp = currX[1]; //speed
-        
+    while (current_distance_m < distance_end_m) {        
         // figure out passive power loss
-        float Paero = -0.5*rho*pow(xp,3)*CdA_Fcn(Re(xp));
-        float Prolling = -Crr(xp)*M*sqrt(g*g)*xp;
-        float Pslope = -slopePolynomial(x)*xp*W;
-        
-        float Ppassive = Pslope + Prolling + Paero;
+        float p_aero_w = -0.5*rho*pow(current_speed_m_s,3)*CdA_Fcn(Re(current_speed_m_s));
+        float p_rolling_w = -Crr(current_speed_m_s)*m_total_kg*g_m_s2*current_speed_m_s;
+        float p_slope_w = -slopePolynomial(current_distance_m)*current_speed_m_s*weight_n;
 
-        // Compute new position
-        currX[0] = currX[0] + xp * stepDuration;
+        float p_passive_w = p_slope_w + p_rolling_w + p_aero_w;
+
+        current_distance_m = current_distance_m + current_speed_m_s * step_duration_s;
 
         // Compute new speed
-        float acceleration = ((Ppassive + PFcn(x)*eta)/xp)/MI;
-        if (acceleration > 4.5) acceleration = 4.5;
-        currX[1] = currX[1] + acceleration * stepDuration; // min is just to stop the singularity at xp = zero
+        float acceleration_m_s2 = ((p_passive_w + PFcn(current_distance_m)*eta_drivetrain)/current_speed_m_s)/MI;
+        const float ACCELERATION_LIMIT_M_S2 = 4.5;
+        if (acceleration_m_s2 > ACCELERATION_LIMIT_M_S2) acceleration_m_s2 = ACCELERATION_LIMIT_M_S2;
+        current_speed_m_s = current_speed_m_s + acceleration_m_s2 * step_duration_s; // min is just to stop the singularity at xp = zero
         step++;
 
-        if (recordSimulation == true) {
+        if (RECORD_TO_FILE) {
             // Open and append data
-            logFile = fopen("./testlog.csv", "a"); // Append
-            fprintf(logFile, "%.3f,%f,%f,0,%f,%f,%f,%f\n", step*stepDuration, currX[0], currX[1], Ppassive, Paero, Prolling, Pslope);
-            fclose(logFile);
+            log_file = fopen("./testlog.csv", "a"); // Append
+            fprintf(log_file, "%.3f,%f,%f,0,%f,%f,%f,%f\n", step*step_duration_s, current_distance_m, current_speed_m_s, p_passive_w, p_aero_w, p_rolling_w, p_slope_w);
+            fclose(log_file);
         }
     }
     
-    // Output stuff (I don't think any is particularly useful to us)
-    const float tEnd = step * stepDuration;
-    const float xpEnd = currX[1];
-    
-    printf("\nRaceSim Results:\n\tTime: %.2f\n\tEnd Speed (m/s | km/h | mph): %.2f | %.2f | %.2f", tEnd, xpEnd, xpEnd * 3.6, xpEnd * 2.2369);
-    
+    const float FINISH_TIME_S = step * step_duration_s;
+    printf("\nRaceSim Results:\n\tTime: %.2f\n\tEnd Speed (m/s | km/h | mph): %.2f | %.2f | %.2f", FINISH_TIME_S, current_speed_m_s, current_speed_m_s * 3.6, current_speed_m_s * 2.2369);
     return;
 }
 
-float compareToSimulation (float speed, float position, float power) {
+float compareToSimulation (float current_speed_m_s, float current_position_m, float current_power_w) {
     // Use 'static' to carry data between calls without resorting to a global scope
-    static float prevSpeed = 0;
-    static float prevPosition = 0;
-    static float prevPower = 0;
-    struct timespec previousTime, currentTime;  // Realtime marks
+    static float prev_speed_m_s = 0;
+    static float prev_position_m = 0;
+    static float prev_power_w = 0;
+    struct timespec prev_time, current_time;  // Realtime marks
 
-    float performanceFactor = 100.0; // Default to nominal
+    float performance_factor = 100.0; // Default to nominal
 
     // Check if it is first call
-    if ((prevSpeed == 0) && (prevPosition == 0) && (prevPower == 0)) {
+    if ((prev_speed_m_s == 0) && (prev_position_m == 0) && (prev_power_w == 0)) {
         // Record data and return with nominal (100%)
-        prevSpeed = speed;
-        prevPosition = position;
-        prevPower = power;
-        clock_gettime(CLOCK_MONOTONIC, &previousTime); // Record time
+        prev_speed_m_s = current_speed_m_s;
+        prev_position_m = current_position_m;
+        prev_power_w = current_power_w;
+        clock_gettime(CLOCK_MONOTONIC, &prev_time); // Record time
 
-        return 100.0;
+        return performance_factor;
     }
 
     // Get time difference from last call in seconds
-    clock_gettime(CLOCK_MONOTONIC, &currentTime); // Get end time
-    float deltaTime = ((currentTime.tv_sec - previousTime.tv_sec)) + ((currentTime.tv_nsec - previousTime.tv_nsec) / 1000000000);
+    clock_gettime(CLOCK_MONOTONIC, &current_time); // Get end time
+    float delta_time_s = ((current_time.tv_sec - prev_time.tv_sec)) + ((current_time.tv_nsec - prev_time.tv_nsec) / 1000000000);
     
     // Find expected speed for present extrapolated from previous call
     // Copied from simulation 
     
     // figure out passive power loss
-    float Paero = -0.5*rho*pow(prevSpeed,3)*CdA_Fcn(Re(prevSpeed));
-    float Prolling = -Crr(prevSpeed)*M*g*prevSpeed;
-    float Pslope = -slopePolynomial(prevPosition)*prevSpeed*W;
-    float Ppassive = Pslope + Prolling + Paero;
+    float p_aero_w = -0.5*rho*pow(prev_speed_m_s,3)*CdA_Fcn(Re(prev_speed_m_s));
+    float p_rolling_w = -Crr(prev_speed_m_s)*m_total_kg*g_m_s2*prev_speed_m_s;
+    float p_slope_w = -slopePolynomial(prev_position_m)*prev_speed_m_s*weight_n;
+    float p_passive_w = p_slope_w + p_rolling_w + p_aero_w;
 
     // Compute estimated speed
-    float acceleration = ((Ppassive + prevPower*eta)/prevSpeed)/MI;
-    float estimatedSpeed = prevSpeed + acceleration * deltaTime;
+    float acceleration_m_s2 = ((p_passive_w + prev_power_w*eta_drivetrain)/prev_speed_m_s)/MI;
+    float estimated_speed = prev_speed_m_s + acceleration_m_s2 * delta_time_s;
     
-    performanceFactor = 100.0 * (speed / estimatedSpeed);
+    performance_factor = 100.0 * (current_speed_m_s / estimated_speed);
 
     // Record parameters for next iteration
-    prevSpeed = speed;
-    prevPosition = position;
-    prevPower = power;
-    clock_gettime(CLOCK_MONOTONIC, &previousTime); // Record time
+    prev_speed_m_s = current_speed_m_s;
+    prev_position_m = current_position_m;
+    prev_power_w = current_power_w;
+    clock_gettime(CLOCK_MONOTONIC, &prev_time); // Record time
 
-    return performanceFactor;
+    return performance_factor;
 }
  
 /*   
