@@ -116,8 +116,8 @@ void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE
     FILE * log_file;
 	if (RECORD_TO_FILE) {
         log_file = fopen("./testlog.csv", "w+");
-        fprintf(log_file, "Time,Position (m),Speed (m/s),Charge,Passive power(w),Aero Power,Rolling Power,Slope Power\n");
-        fprintf(log_file, "%.3f,%f,%f,0,0,0,0,0\n", step*step_duration_s, current_distance_m, current_speed_m_s);
+        fprintf(log_file, "Time,Position (m),Speed (m/s),Passive power(w),Aero Power,Rolling Power,Slope Power\n");
+        fprintf(log_file, "%.3f,%f,%f,0,0,0,0\n", step*step_duration_s, current_distance_m, current_speed_m_s);
         fclose(log_file);
     }
     
@@ -141,7 +141,7 @@ void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE
         if (RECORD_TO_FILE) {
             // Open and append data
             log_file = fopen("./testlog.csv", "a"); // Append
-            fprintf(log_file, "%.3f,%f,%f,0,%f,%f,%f,%f\n", step*step_duration_s, current_distance_m, current_speed_m_s, p_passive_w, p_aero_w, p_rolling_w, p_slope_w);
+            fprintf(log_file, "%.3f,%f,%f,%f,%f,%f,%f\n", step*step_duration_s, current_distance_m, current_speed_m_s, p_passive_w, p_aero_w, p_rolling_w, p_slope_w);
             fclose(log_file);
         }
     }
