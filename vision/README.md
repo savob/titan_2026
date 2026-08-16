@@ -2,6 +2,9 @@
 
 This folder is the collection of vision system code running on the RPis. Split between C and Python code.
 
+>[!NOTE]
+> Although these files can be viewed and edited off RPis they will only really compile and work properly on RPi 3 microcomputers due to the dependence on some hardware specific libraries, especially for the overlay functionality.
+
 ## Operation
 
 The RPis are configured to boot this system automatically when powered by executing the `titan_startup.py` script when booted (done by editing [rc.local](https://linuxhint.com/use-etc-rc-local-boot/)). To speed this process up, the RPis are configured to boot to command line (CLI) rather than starting the graphical user interface; we believe this also slightly improves the speed of the system.
@@ -13,7 +16,7 @@ The RPis are configured to boot this system automatically when powered by execut
   - If held for a few seconds it will shut down the RPi. Presing the button again will start the RPi.
 - `camera.py` starts the camera feed and camera recordings
 
-Once these are running, the startup script then responsible for determining whether the RPi is supposed to be the front or rear rider's system based on the presence or absence (respectively) of an ANT+ receiver, and launching the overlay program, `bike.bin`, accordingly by passing it the right arguments. 
+Once these are running, the startup script then responsible for determining whether the RPi is supposed to be the front or rear rider's system based on the presence or absence (respectively) of an ANT+ receiver, and launching the overlay program, `bike.bin`, accordingly by passing it the right arguments.
 
 - If it is the rear system (no ANT+ modules connected), then the startup script just launches `bike.bin` with the arguments needed for the rear system.
 - If it is the front system (ANT+ module present), then the startup script launches the `titanant.py` script to read the ANT+ data and pipe it into `bike.bin` to be overlaid and fed to the STM32.
@@ -31,3 +34,14 @@ The overlay code is the main product of this folder, and written in C. It is spl
 - `racesim` - A C version of our Race Simulation file used to determine how our bike should perform and then compare to how it actually is to see if we're exceeding expectations or not. **UNTESTED**.
 - `serialComs` - Responsible for handling communication with the STM32
 - `timeTrial` - Used to monitor timing of the code to see how long different sections take to execute. *Used for development purposes, not needed for the riders.*
+
+The code can be edited on the RPi itself, and this is fine for any small tweaks such as some hardcoded constants like wheel radius. However for any larger changes it will likely be easier to offload the editing onto a more capable computer to then copy the changed source code onto an RPi. The exact method to do this is up to you, but I generally opted to move the SD card between the RPi and my laptop.
+
+>[!IMPORTANT]
+> Regardless of how the code is edited, it **must be compiled on an RPi 3 itself**. This is because overlay code makes use of low level video drivers (VideoCore) for the Broadcom chip that runs the RPi 3 computers, as well as some specific features for some timing code. It is for this reason that many of the `#include` statements and constants will likely be flagged as errors on a non-RPi computer.
+
+The compilation process is based on using a `Makefile` so to generate a new `bike.bin` simply execute the following command in this folder.
+
+```bash
+make
+```
