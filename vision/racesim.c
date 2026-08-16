@@ -118,7 +118,6 @@ void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE
         log_file = fopen("./testlog.csv", "w+");
         fprintf(log_file, "Time,Position (m),Speed (m/s),Passive power(w),Aero Power,Rolling Power,Slope Power\n");
         fprintf(log_file, "%.3f,%f,%f,0,0,0,0\n", step*step_duration_s, current_distance_m, current_speed_m_s);
-        fclose(log_file);
     }
     
     while (current_distance_m < distance_end_m) {        
@@ -139,13 +138,14 @@ void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE
         step++;
 
         if (RECORD_TO_FILE) {
-            // Open and append data
-            log_file = fopen("./testlog.csv", "a"); // Append
             fprintf(log_file, "%.3f,%f,%f,%f,%f,%f,%f\n", step*step_duration_s, current_distance_m, current_speed_m_s, p_passive_w, p_aero_w, p_rolling_w, p_slope_w);
-            fclose(log_file);
         }
     }
-    
+
+    if (RECORD_TO_FILE) {
+        fclose(log_file);
+    }
+
     const float FINISH_TIME_S = step * step_duration_s;
     printf("\nRaceSim Results:\n\tTime: %.2f\n\tEnd Speed (m/s | km/h | mph): %.2f | %.2f | %.2f", FINISH_TIME_S, current_speed_m_s, current_speed_m_s * 3.6, current_speed_m_s * 2.2369);
     return;
