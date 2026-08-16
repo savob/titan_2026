@@ -152,11 +152,13 @@ void RaceSimV3_WHPSC_complete(float initial_speed_m_s, const bool RECORD_TO_FILE
 }
 
 float compareToSimulation (float current_speed_m_s, float current_position_m, float current_power_w) {
-    // Use 'static' to carry data between calls without resorting to a global scope
     static float prev_speed_m_s = 0;
     static float prev_position_m = 0;
     static float prev_power_w = 0;
-    struct timespec prev_time, current_time;  // Realtime marks
+    static struct timespec prev_time = {
+        .tv_sec = 0,
+        .tv_nsec = 0
+    };
 
     float performance_factor = 100.0; // Default to nominal
 
@@ -172,8 +174,9 @@ float compareToSimulation (float current_speed_m_s, float current_position_m, fl
     }
 
     // Get time difference from last call in seconds
+    struct timespec current_time;  // Realtime marks
     clock_gettime(CLOCK_MONOTONIC, &current_time); // Get end time
-    float delta_time_s = ((current_time.tv_sec - prev_time.tv_sec)) + ((current_time.tv_nsec - prev_time.tv_nsec) / 1000000000);
+    float delta_time_s = ((current_time.tv_sec - prev_time.tv_sec)) + ((float)(current_time.tv_nsec - prev_time.tv_nsec) / 1000000000.0);
     
     // Find expected speed for present extrapolated from previous call
     // Copied from simulation 
@@ -194,8 +197,9 @@ float compareToSimulation (float current_speed_m_s, float current_position_m, fl
     prev_speed_m_s = current_speed_m_s;
     prev_position_m = current_position_m;
     prev_power_w = current_power_w;
-    clock_gettime(CLOCK_MONOTONIC, &prev_time); // Record time
-
+    prev_time.tv_sec = current_time.tv_sec;
+    prev_time.tv_nsec = current_time.tv_nsec;
+    
     return performance_factor;
 }
  
