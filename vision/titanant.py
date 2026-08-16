@@ -28,12 +28,14 @@ front_hrm = None
 rear_pwr = None
 rear_hrm = None
 
+'''
 # Test/default channel parameters
 front_pwr_channel = [10,11,5]
 front_hrm_channel = [20,120,1]
 rear_pwr_channel = [30,11,5]
 rear_hrm_channel = [40,120,1]
 #print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!\nTEST CHANNEL DATA LOADED\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+'''
 
 # List of our devices
 # device_number, device_type, transmission_type
@@ -42,16 +44,14 @@ calvin_hrm_channel = [52247, 120, 1] # Calvin's HRM
 evan_pedals_channel = [36424,11,5] # Evan's Pedals
 evan_hrm_channel = [41034, 120, 1] # Evan's HRM
 
-'''
 # Actual channels used, if uncommented
 front_pwr_channel = calvin_pedals_channel
 front_hrm_channel = calvin_hrm_channel
 
-rear_hrm_channel = evan_hrm_channel
+rear_pwr_channel = evan_pedals_channel
 rear_hrm_channel = evan_hrm_channel
 
 print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!\nREAL CHANNEL DATA LOADED\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
-'''
 
 front_pwr = PwrDevice(controller.node, front_pwr_channel[0], front_pwr_channel[1], front_pwr_channel[2])
 front_hrm = HrmDevice(controller.node, front_hrm_channel[0], front_hrm_channel[1], front_hrm_channel[2])
