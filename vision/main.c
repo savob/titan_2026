@@ -107,9 +107,6 @@ int main(int argc, char *argv[]) {
    else if (useSerial == true) printf(ANSI_COLOUR_GREEN "Not collecting ANT data locally, requesting ANT data over serial.\n" ANSI_COLOUR_RESET);
    else printf(ANSI_COLOUR_RED "NOT USING ANY ANT DATA. DISPLAYING RANDOM ANT DATA!\n" ANSI_COLOUR_RESET);
    
-   // Start RaceSim
-   setupRaceSim();
-   
    // Start logging
    if (enableLogging == true) startLogging();
    else printf(ANSI_COLOUR_YELLOW "NOT LOGGING DATA!\n" ANSI_COLOUR_RESET);

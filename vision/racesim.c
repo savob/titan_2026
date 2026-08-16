@@ -24,47 +24,59 @@ Calvin Moes 2016/03/29
 Based on code by Trefor Evans
 */
 
-// Function prototypes, just incase things get thrown out of order 
-// (not put in header to keep them scoped to only this file)
-float CdA_Fcn(float Re);
-float Cd_flatplate(float re);
-float Crr(float xp);
-float PFcn(float dist);
-float Re(float xp);
-float slopePolynomial(float distance);
-bool raceSimHasBeenSetup = false; // Keeps track of if variables have been set up
+static float CdA_Fcn(float Re);
+static float Cd_flatplate(float re);
+static float Crr(float xp);
+static float PFcn(float dist);
+static float Re(float xp);
+static float slopePolynomial(float distance);
 
 // Bike Mass and geometry parameters
-float Rf;
-float Rr;
-float Mf;
-float Mr;
-float If; // (Mf-0.200)*(Rf-25e-3)^2;
-float Ir;
-float Mframe; // everything except the wheels
-float Mrider;
-float M;
-float MI;
-float RefLen;
+static const float Rf = 0.255;
+static const float Rr = 0.255;
+static const float Mf = 2.5;
+static const float Mr = 2.5;
+static const float If = 0.0197492333611; // (Mf-0.200)*(Rf-25e-3)^2;
+static const float Ir = 0.0197492333611;
+static const float Mframe = 40 - Mf - Mr; // everything except the wheels
+static const float Mrider = 145;
+static const float M = Mf + Mr + Mframe + Mrider;
+static const float MI = M + If / (Rf * Rf) + Ir / (Rr * Rr);
+static const float RefLen = 3.4;
 
-const float g = 9.81;	// Gravitational acceleration (m/s^2)
-float W;  	// Weight (N)
+static const float g = 9.81;	// Gravitational acceleration (m/s^2)
+static const float W = g*M;  	// Weight (N)
 
-// Get Bike Drag Parameters
-float rho;
-float mu;   // dynamic viscosity of air
-float nu;   // Kinematic viscosity
-float xpRef; // reference velocity for CdA_Ref
-float CdA_Valkyrie; // [m^2] 
-float CdA_Ref;
-float ReRef;
-float L2nu;  // Used in Reynolds
+// Bike Drag Parameters
+static const float rho = 0.95;
+static const float mu = 1.983e-5;   // dynamic viscosity of air
+static const float nu = mu / rho;   // Kinematic viscosity
+static const float xpRef = 130 / 3.6; // reference velocity for CdA_Ref
+static const float CdA_Valkyrie = 0.014 * 1.7; // [m^2] 
+static const float CdA_Ref = 1.0 * CdA_Valkyrie;
+static const float ReRef = xpRef * rho * RefLen / mu;
+static const float L2nu = RefLen / nu;  // Used in Reynolds
 
-float Re(float xp) {
+// Rolling resistance parameters/function
+static const float Crr1 = 0.0018; // 0.0023 * 0.4 + 0.0039 * 0.6; 
+static const float Crr2 = 0.000005; // 0.000064 * 0.6; // 0.000064 for Pro One, 0 for GP Custom
+static const float eta = 0.97; // Drive train efficiency
+
+// Simulation parameters
+static const float stepDuration = 0.005;
+static const float distanceEnd = 8000; // Distance to end
+
+// Power Setup
+static const float p_runup = 290; // W
+static const float p_sprint = 490; // W
+static const float sprint_start_mark = 1.25; // mile marker from finish
+static const float sprint_start = (5*1600)-(sprint_start_mark*1600); // m
+
+static float Re(float xp) {
 	return (xp * L2nu);
 }
 
-float Cd_flatplate(float re) {
+static float Cd_flatplate(float re) {
     // turb flat plate. Anderson page 840
     float cd = 0.074 * pow(re, -0.2);
 
@@ -74,95 +86,31 @@ float Cd_flatplate(float re) {
     else return cdThreshold;
 }
 
-float CdA_Fcn(float Re) {
+static float CdA_Fcn(float Re) {
     return (CdA_Ref * (Cd_flatplate(Re) / Cd_flatplate(ReRef))); 
     //this allows the Cd to vary approx accurately with Re but be correct at a given speed
 }
 
-// Roling resistance parameters/function
-float Crr1;
-float Crr2;
-float eta; // Drive train efficiency
-float Crr(float xp) {
+static float Crr(float xp) {
     return (Crr1 + xp * Crr2);
 }
 
-// Get some rider and simulation parameters
-float stepDuration;
-float distanceEnd; // Distance to end
-
-// Power Setup
-float p_runup; // W
-float p_sprint; // W
-float sprint_start_mark; // mile marker from finish
-float sprint_start; // m
-
-float PFcn(float dist) {
+static float PFcn(float dist) {
     // Return sprint power if in sprint region
     if (dist < sprint_start) return p_runup;
     else return p_sprint;
 }
 
-float slopePolynomial(float distance) {
+static float slopePolynomial(float distance) {
     distance = distance / 1000.0; // Reduce differences in orders to keep things accurate
     float slope = -4.87E-06*pow(distance,4) + 0.0000643*pow(distance,3) - 0.0000185*pow(distance,2) - 0.0015*distance - 0.00427;
     return slope;
-}
-
-// Moved all variable/constant setting here so they could be calculated and set in one place
-void setupRaceSim() {
-
-    // Bike Mass and geometry parameters
-    Rf = 0.255;
-    Rr = 0.255;
-    Mf = 2.5;
-    Mr = 2.5;
-    If = 0.0197492333611; // (Mf-0.200)*(Rf-25e-3)^2;
-    Ir = 0.0197492333611;
-    Mframe = 40 - Mf - Mr; // everything except the wheels
-    Mrider = 145;
-    M = Mf + Mr + Mframe + Mrider;
-    MI = M + If / (Rf * Rf) + Ir / (Rr * Rr); // total mass and inertia
-    RefLen = 3.4;
-
-    W = g*M;  	// Weight (N)
-
-    // Get some rider and simulation parameters
-    stepDuration = 0.005;
-
-    // Drag Parameters
-    rho = 0.95;
-    mu = 1.983e-5;   // dynamic viscosity of air
-    nu = mu / rho;   // Kinematic viscosity
-    xpRef = 130 / 3.6; // reference velocity for CdA_Ref
-    CdA_Valkyrie = 0.014 * 1.7; // [m^2] 
-    CdA_Ref = 1.0 * CdA_Valkyrie;
-    ReRef = xpRef * rho * RefLen / mu;
-    L2nu = RefLen / nu;  // Used in Reynolds
-
-    // Rolling resistance parameters
-    Crr1 = 0.0018; // 0.0023 * 0.4 + 0.0039 * 0.6; 
-    Crr2 = 0.000005; // 0.000064 * 0.6; // 0.000064 for Pro One, 0 for GP Custom
-    eta = 0.97; // Drive train efficiency
-
-    // Power parameters
-    p_runup = 290; // W
-    p_sprint = 490; // W
-    sprint_start_mark = 1.25; // mile marker from finish
-    sprint_start = (5*1600)-(sprint_start_mark*1600); //m
-
-    distanceEnd = 8000;
-
-
-    raceSimHasBeenSetup = true; // Record setup
 }
 
 void RaceSimV3_WHPSC_complete(float initialSpeed, bool recordSimulation) {
 
     // Ensure proper input and other constants
     const float stepDuration = 0.005;
-    
-    if (raceSimHasBeenSetup == false) setupRaceSim();
     
     // Run time-marching algorithm
     // initialize X
@@ -265,7 +213,6 @@ float compareToSimulation (float speed, float position, float power) {
 /*   
 int main() {
     // Test file with 
-    setupRaceSim();
     RaceSimV3_WHPSC_complete(2.7, true);
     return 0;
 }
