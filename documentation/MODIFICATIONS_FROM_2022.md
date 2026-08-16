@@ -26,6 +26,7 @@ These are actions that must be completed for the new hardware to be usable in TI
 - **Crimp the front and rear wheel sensor cable to use a JST-XH** 5-pin connector abiding by the pinout on the PCB.
   - _Note: not all connections need to be used if not desired. E.g. the front wheel may not use the encoder._
 - **Update the power scripts on the RPi** to reflect single button for on and off if using the SD card image from 2022.
+  - These are found alongside the vision system code at `/home/pi/Desktop/vision/` on the `rootfs` partition of the SD card
 
 ## Optional Changes
 
