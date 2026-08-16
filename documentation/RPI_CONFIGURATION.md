@@ -1,5 +1,8 @@
 # Raspberry Pi Configuration
 
+>[!IMPORTANT]
+> This is only applicable if starting from scratch with a clean SD card and not using the archived image of TITAN from 2022.
+
 The hardware we use for TITAN are Raspberry Pi Model 3 computers, any subvariant is acceptable (A, B, B+). The system image we have been using for years is for 16&nbsp;GiB microSD cards.
 
 >[!WARNING]
@@ -12,7 +15,7 @@ The Raspberry Pis were configured years ago with no proper record other than the
 Check if the VideoCore library and examples are present in the system at `/opt/vc/`. If not try the following remedies:
 
 - Run this in terminal `sudo apt-get install libraspberrypi0`
-- Download the `userland` repository at this commit, the most recent before the 2022 competition, although likely already on the RPi. https://github.com/raspberrypi/userland/tree/54fd97ae4066a10b6b02089bc769ceed328737e0
+- Download the `userland` repository at [this commit](https://github.com/raspberrypi/userland/tree/54fd97ae4066a10b6b02089bc769ceed328737e0), the most recent before the 2022 competition, although likely already on the RPi.
 
 With that sorted run the following commands:
 

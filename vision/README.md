@@ -5,6 +5,21 @@ This folder is the collection of vision system code running on the RPis. Split b
 >[!NOTE]
 > Although these files can be viewed and edited off RPis they will only really compile and work properly on RPi 3 microcomputers due to the dependence on some hardware specific libraries, especially for the overlay functionality.
 
+## Setup
+
+>[!IMPORTANT]
+> There is a bit of setup needed for this code to work assuming the system is not derived from an image of TITAN in 2022. However I am hazy on the details so this is my best guess.
+
+To setup the ANT receiving system please follow the instruction in [HPVDT's fork](https://github.com/hpvdt/openant) of another fork of OpenAnt.
+
+To configure the C build system for the overlay system one will likely need to execute the following shell commands, although I am unfortunately not certain if they're what I did all those years ago.
+
+```bash
+sudo apt install cmake
+sudo apt-get install libraspberrypi0
+sudo ldconfig -n /opt/vc/lib
+```
+
 ## Operation
 
 The RPis are configured to boot this system automatically when powered by executing the `titan_startup.py` script when booted (done by editing [rc.local](https://linuxhint.com/use-etc-rc-local-boot/)). To speed this process up, the RPis are configured to boot to command line (CLI) rather than starting the graphical user interface; we believe this also slightly improves the speed of the system.
