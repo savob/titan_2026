@@ -6,24 +6,24 @@
 #include "serialComs.c"
 #include <time.h>
 
-int serialLine = 0;
+int serial_line_in_use = 0;
 char bufferIn[10];
 char bufferOut[10];
 
 int main() {
-	serialLine = openLine("/dev/serial0");
+	serial_line_in_use = openLine("/dev/serial0");
 	
-	if (serialLine == -1) {
+	if (serial_line_in_use == -1) {
 		return (1);
 	}
 	
 	bufferOut[0] = '3';
-	sendData(serialLine, 'Y', bufferOut);
+	sendData(serial_line_in_use, 'Y', bufferOut);
 	printf("Sent 'Y' to be %s.\n", bufferOut);
 
-	requestData(serialLine, 'y', bufferIn);
+	requestData(serial_line_in_use, 'y', bufferIn);
 	printf("Requested 'y', recieved: %s\n", bufferIn);
 	
-	closeLine(serialLine);
+	closeLine(serial_line_in_use);
 	printf("Closed line.\n");
 }

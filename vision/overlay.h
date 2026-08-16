@@ -21,10 +21,4 @@ void startOverlay(bool cameraOn);
 
 void closeOverlay();
 
-
-///////////////////////////////////////////////////////
-// Constants and variables
-
-
-
 #endif

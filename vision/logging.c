@@ -1,6 +1,6 @@
 #include "logging.h"
 
-//#define USE_TIME_FOR_FILE_NAME // Use only if connected to internet or NTC installed
+//#define USE_TIME_FOR_FILE_NAME // Use only if connected to internet or RTC installed
 
 FILE * logFile;
 char fileLocation[70];

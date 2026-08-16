@@ -1,17 +1,17 @@
 #include "main.h"
-#define powerAvgFrames 50 // Needs to be #define for array sizes
+#define POWER_AVERAGE_FRAMES 50 // Needs to be #define for array sizes
 
-int numberFrames = -1; // Number of frames to render for testing (-1 for infinite)
-const float CIRCUMFERENCE = 2.104;
+int overlay_frames_to_render = -1; // Number of frames to render for testing (-1 for infinite)
+const float WHEEL_CIRCUMFERENCE_M = 2.104;
 
 // Serial configuration
-bool useSerial = false; // Use serial or not
-int serialLine = -1;
+bool using_serial_data = false; // Use serial or not
+int serial_line_in_use = -1;
 
-bool collectANT = false; 	   // Use ANT data from USB?
-bool enableLogging = false;   // Logging configuration
-bool enableCamera = false;    // Camera
-bool isFront = true;          // Is front or not
+bool collecting_ant_data = false; 	   // Use ANT data from USB?
+bool logging_enabled = false;   // Logging configuration
+bool cameara_enabled = false;    // Camera
+bool system_is_front_rider = true;          // Is front or not
 
 int main(int argc, char *argv[]) {
    printf(ANSI_COLOUR_BLUE "\n==================\n! TITAN 2022 HUD !\n==================" ANSI_COLOUR_RESET);
@@ -30,28 +30,28 @@ int main(int argc, char *argv[]) {
    switch (argc) {
       case 3:
          // Get frame count
-         numberFrames = atoi(argv[2]);
+         overlay_frames_to_render = atoi(argv[2]);
       case 2:
          // Go through setup string
          do {
             switch (argv[1][characterToRead]) {
                case 'l':
-                  enableLogging = true;
+                  logging_enabled = true;
                   break;
                case 's':
-                  useSerial = true;
+                  using_serial_data = true;
                   break;
                case 'a':
-                  collectANT = true;
+                  collecting_ant_data = true;
                   break;
                case 'c':
-                  enableCamera = true;
+                  cameara_enabled = true;
                   break;
                case 'r':
-                  isFront = false;
+                  system_is_front_rider = false;
                   break;
                case 'f':
-                  isFront = true;
+                  system_is_front_rider = true;
                   break;
             }
          } while (argv[1][characterToRead++] != '\0'); 
@@ -62,57 +62,57 @@ int main(int argc, char *argv[]) {
    
    // Reguritate configuration
    printf("\nParsed configuration:\n" ANSI_COLOUR_YELLOW);
-   if (isFront == true) printf("\tRole: FRONT\n");
+   if (system_is_front_rider == true) printf("\tRole: FRONT\n");
    else printf("\tRole: REAR\n");
-   printf("\tCamera running: %d\n", enableCamera);
-   printf("\tCollecting ANT data: %d\n", collectANT);
-   printf("\tCommunicate over serial: %d\n", useSerial);
-   printf("\tLogging: %d\n", enableLogging);
-   if (numberFrames > 0) printf("\tNumber of frames: %d\n\n" ANSI_COLOUR_RESET, numberFrames);
+   printf("\tCamera running: %d\n", cameara_enabled);
+   printf("\tCollecting ANT data: %d\n", collecting_ant_data);
+   printf("\tCommunicate over serial: %d\n", using_serial_data);
+   printf("\tLogging: %d\n", logging_enabled);
+   if (overlay_frames_to_render > 0) printf("\tNumber of frames: %d\n\n" ANSI_COLOUR_RESET, overlay_frames_to_render);
    else printf("\tNo limit to number of frames.\n\n" ANSI_COLOUR_RESET);
    
    // Local variables
-   int frontCadence = 0, rearCadence = 0; 
-   int frontPower = 0, rearPower = 0;
-   int frontHeartRate = 0, rearHeartRate = 0;
+   int cadence_front_r_m = 0, cadence_rear_r_m = 0; 
+   int power_front_w = 0, power_rear_w = 0;
+   int heart_rate_front_b_m = 0, heart_rate_rear_b_m = 0;
    int ANTData[] = {0,0,0,0,0,0};
-   int rearBattery = 0, frontBattery = 0;
-   int rotations = 0;
-   float speedWheel = 0.0;
-   float distanceWheel = 0.0, distanceGPS = 0.0;
-   float temperature = 0.0;
-   float humidity = 0.0;
-   float performanceFactor = 0.0;
-   float frontBrakeTemp = 200.0, rearBrakeTemp = 200.0;
-   int ppmCO2 = 0;
-   float speedGPS = 0.0;
+   int battery_soc_rear_percent = 0, battery_soc_front_percent = 0;
+   int wheel_rotations = 0;
+   float speed_wheel_km_h = 0.0;
+   float dist_wheel_km = 0.0, dist_gps_km = 0.0;
+   float temperature_c = 0.0;
+   float humidity_per = 0.0;
+   float perfomrance_percentage = 0.0;
+   float brake_temp_front_c = 200.0, brake_temp_rear_c = 200.0;
+   int co2_ppm = 0;
+   float speed_gps_km_h = 0.0;
    
    // Open serial line
-   if (useSerial == true) {
-      serialLine = openLine("/dev/serial0");
+   if (using_serial_data) {
+      serial_line_in_use = openLine("/dev/serial0");
       
-      if (serialLine != -1) printf(ANSI_COLOUR_GREEN "Successfully opened serial line!\n" ANSI_COLOUR_RESET);
+      if (serial_line_in_use != -1) printf(ANSI_COLOUR_GREEN "Successfully opened serial line!\n" ANSI_COLOUR_RESET);
       else {
          printf(ANSI_COLOUR_RED "FAILED TO OPEN SERIAL LINE!\nReverting to non-serial behavior.\n" ANSI_COLOUR_RESET);
-         useSerial = false;
+         using_serial_data = false;
       }
    }
    else printf(ANSI_COLOUR_RED "NOT USING SERIAL DATA.\n" ANSI_COLOUR_RESET);
    
    // Inform if ANT data is expected, and set up stdin accordingly
-   if (collectANT == true) {
+   if (collecting_ant_data) {
       printf("Expecting ANT data to be piped in.\n");
       fcntl(0, F_SETFL, O_NONBLOCK); // Set stdin (0) to be non-blocking
    }
-   else if (useSerial == true) printf(ANSI_COLOUR_GREEN "Not collecting ANT data locally, requesting ANT data over serial.\n" ANSI_COLOUR_RESET);
+   else if (using_serial_data) printf(ANSI_COLOUR_GREEN "Not collecting ANT data locally, requesting ANT data over serial.\n" ANSI_COLOUR_RESET);
    else printf(ANSI_COLOUR_RED "NOT USING ANY ANT DATA. DISPLAYING RANDOM ANT DATA!\n" ANSI_COLOUR_RESET);
    
    // Start logging
-   if (enableLogging == true) startLogging();
+   if (logging_enabled) startLogging();
    else printf(ANSI_COLOUR_YELLOW "NOT LOGGING DATA!\n" ANSI_COLOUR_RESET);
    
    // Print camera status
-   if (enableCamera == true) printf(ANSI_COLOUR_RESET "Camera will be launched shortly!\n" ANSI_COLOUR_RESET);
+   if (cameara_enabled) printf(ANSI_COLOUR_RESET "Camera will be launched shortly!\n" ANSI_COLOUR_RESET);
    else printf(ANSI_COLOUR_RED "Camera not configured to start.\n" ANSI_COLOUR_RESET);
       
    sleep(3); // Pause to show config before potentially running camera
@@ -127,16 +127,16 @@ int main(int argc, char *argv[]) {
    clock_gettime(CLOCK_MONOTONIC, &tSystemStart); // Get start time
    clock_t titanProcessClock = clock(); // Get start processor time
    
-   startOverlay(enableCamera);
+   startOverlay(cameara_enabled);
    
    // Main HUD loop
-   int framesRemaining = numberFrames;
+   int overlay_frames_left_to_render = overlay_frames_to_render;
    do {
       
       // ANT data
       printf("Grabbing ANT data\n");
-      if (collectANT == true) getANTDataPipedIn(ANTData, serialLine);      // It is meant to collect data locally
-      else if (useSerial == false) { 
+      if (collecting_ant_data == true) getANTDataPipedIn(ANTData, serial_line_in_use);      // It is meant to collect data locally
+      else if (using_serial_data == false) { 
          // Cant' collect nor request ANT data, use random numbers
          ANTData[0] = 60;
          ANTData[1] = 60;
@@ -147,20 +147,21 @@ int main(int argc, char *argv[]) {
       }
       
       // Copy to nicer named variables
-      frontHeartRate = ANTData[0];
-      frontCadence = ANTData[1];
-      frontPower = ANTData[2];
-      rearHeartRate = ANTData[3];
-      rearCadence = ANTData[4];
-      rearPower = ANTData[5];
+      heart_rate_front_b_m = ANTData[0];
+      cadence_front_r_m = ANTData[1];
+      power_front_w = ANTData[2];
+      heart_rate_rear_b_m = ANTData[3];
+      cadence_rear_r_m = ANTData[4];
+      power_rear_w = ANTData[5];
 
       
       // Get bike data
-      if (useSerial == true) { // Collect bike data from STM32 over serial      
+      if (using_serial_data) { // Collect bike data from STM32 over serial      
          printf("Grabbing serial data\n");
          
          char bulkBuffer[32];
-         startTrial(); requestData(serialLine, '{', &bulkBuffer[1]); 
+         startTrial(); 
+         requestData(serial_line_in_use, '{', &bulkBuffer[1]); 
          
          struct bulkDataStruct {
             char messageType;
@@ -187,83 +188,83 @@ int main(int argc, char *argv[]) {
          memcpy(&dataLoad, bulkBuffer, sizeof(dataLoad));
          dataLoad.messageType = '[';
          
-         distanceGPS = dataLoad.distGPS / 1000.0;
-         speedWheel = dataLoad.speedEncoder / 1000.0;
-         speedGPS = dataLoad.speedGPS / 1000.0;
-         rotations = dataLoad.rotations;
-         frontBrakeTemp = dataLoad.frontBrakeT / 100.0;
-         rearBrakeTemp =dataLoad.rearBrakeT / 100.0;
-         frontBattery = dataLoad.fBatt;
-         rearBattery = dataLoad.rBatt;
-         humidity = dataLoad.humid / 2.0;
-         temperature = (dataLoad.temp - 50.0) / 2.0;
-         ppmCO2 = dataLoad.CO2;
-         frontHeartRate = dataLoad.fhr;
-         rearHeartRate = dataLoad.rhr;
-         frontCadence = dataLoad.fcad;
-         rearCadence = dataLoad.rcad;
-         frontPower = dataLoad.fpwr;
-         rearPower = dataLoad.rpwr;
+         dist_gps_km = dataLoad.distGPS / 1000.0;
+         speed_wheel_km_h = dataLoad.speedEncoder / 1000.0;
+         speed_gps_km_h = dataLoad.speedGPS / 1000.0;
+         wheel_rotations = dataLoad.rotations;
+         brake_temp_front_c = dataLoad.frontBrakeT / 100.0;
+         brake_temp_rear_c =dataLoad.rearBrakeT / 100.0;
+         battery_soc_front_percent = dataLoad.fBatt;
+         battery_soc_rear_percent = dataLoad.rBatt;
+         humidity_per = dataLoad.humid / 2.0;
+         temperature_c = (dataLoad.temp - 50.0) / 2.0;
+         co2_ppm = dataLoad.CO2;
+         heart_rate_front_b_m = dataLoad.fhr;
+         heart_rate_rear_b_m = dataLoad.rhr;
+         cadence_front_r_m = dataLoad.fcad;
+         cadence_rear_r_m = dataLoad.rcad;
+         power_front_w = dataLoad.fpwr;
+         power_rear_w = dataLoad.rpwr;
 
          endTrialIgnore("Bulk transfer", 30);
 
-         distanceWheel = rotations * CIRCUMFERENCE / 1000.0;
+         dist_wheel_km = wheel_rotations * WHEEL_CIRCUMFERENCE_M / 1000.0;
          
          /*
          printf("Message type: %c, length char %c\n", dataLoad.messageType, dataLoad.messageLength);
-         printf("\tSpeeds: %.3f / %.3f\n", speedWheel, speedGPS);
-         printf("\tDist: %.3f / %.3f\n", distanceWheel, distanceGPS);
-         printf("\tBrake Temps: %.2f / %.2f\n", frontBrakeTemp, rearBrakeTemp);
-         printf("\tBatteries: %d / %d\n", frontBattery, rearBattery);
-         printf("\tAtmosphere: %.1f degC, %.1f %%RH, %d ppmCO2\n", temperature, humidity, ppmCO2);
-         printf("\tANT front: HR %d | CAD %d | PWR %d\n", frontHeartRate, frontCadence, frontPower);
-         printf("\tANT rear: HR %d | CAD %d | PWR %d\n", rearHeartRate, rearCadence, rearPower);
+         printf("\tSpeeds: %.3f / %.3f\n", speed_wheel_km_h, speed_gps_km_h);
+         printf("\tDist: %.3f / %.3f\n", dist_wheel_km, dist_gps_km);
+         printf("\tBrake Temps: %.2f / %.2f\n", brake_temp_front_c, brake_temp_rear_c);
+         printf("\tBatteries: %d / %d\n", battery_soc_front_percent, battery_soc_rear_percent);
+         printf("\tAtmosphere: %.1f degC, %.1f %%RH, %d ppmCO2\n", temperature_c, humidity_per, co2_ppm);
+         printf("\tANT front: HR %d | CAD %d | PWR %d\n", heart_rate_front_b_m, cadence_front_r_m, power_front_w);
+         printf("\tANT rear: HR %d | CAD %d | PWR %d\n", heart_rate_rear_b_m, cadence_rear_r_m, power_rear_w);
          */
          
       }
       else {
          // Placeholder data for when not collecting anything over serial
-         rearBattery = 25;
-         frontBattery = 25;
-         speedWheel = 120.6;
-         distanceWheel = 7;
-         temperature = 0.0;
-         humidity = 0.0;
-         performanceFactor = 101.2;
-         frontBrakeTemp = 200.0;
-         rearBrakeTemp = 200.0;
-         ppmCO2 = 1550;
-         speedGPS = 120.6;
-         distanceGPS = 6.92;
+         battery_soc_rear_percent = 25;
+         battery_soc_front_percent = 25;
+         speed_wheel_km_h = 120.6;
+         dist_wheel_km = 7;
+         temperature_c = 0.0;
+         humidity_per = 0.0;
+         perfomrance_percentage = 101.2;
+         brake_temp_front_c = 200.0;
+         brake_temp_rear_c = 200.0;
+         co2_ppm = 1550;
+         speed_gps_km_h = 120.6;
+         dist_gps_km = 6.92;
       }
       
-      printf("Averaging power\n");
-      // Get average power over powerAvgFrames frames 
+      // Get average power over POWER_AVERAGE_FRAMES frames 
       // 10 frames/second, power sensor polls 1 times/second 
       // This does a continuous (rolling) average instead of a periodic average
       if (true) {
-         static int frontPowerValues[powerAvgFrames], rearPowerValues[powerAvgFrames];
-         static int currentPowerFrame = 0;
+         // printf("Averaging power\n");
+         static int front_power_values[POWER_AVERAGE_FRAMES], rear_power_values[POWER_AVERAGE_FRAMES];
+         static int current_index = 0;
          
          // Add current power to rolling buffer
-         frontPowerValues[currentPowerFrame] = frontPower;
-         rearPowerValues[currentPowerFrame] = rearPower;
+         front_power_values[current_index] = power_front_w;
+         rear_power_values[current_index] = power_rear_w;
          
          // Determine average value for each buffer and save it
          long frontPowerTotal = 0;
          long rearPowerTotal = 0;
          
-         for (int i = 0; i < powerAvgFrames; i++) {
-            frontPowerTotal = frontPowerTotal + frontPowerValues[i];
-            rearPowerTotal = rearPowerTotal + rearPowerValues[i];
+         for (int i = 0; i < POWER_AVERAGE_FRAMES; i++) {
+            frontPowerTotal = frontPowerTotal + front_power_values[i];
+            rearPowerTotal = rearPowerTotal + rear_power_values[i];
          }
          
-         frontPower = frontPowerTotal / powerAvgFrames;
-         rearPower = rearPowerTotal / powerAvgFrames;
+         power_front_w = frontPowerTotal / POWER_AVERAGE_FRAMES;
+         power_rear_w = rearPowerTotal / POWER_AVERAGE_FRAMES;
          
          // Increment and loop current frame index
-         currentPowerFrame++;
-         currentPowerFrame = currentPowerFrame % powerAvgFrames;
+         current_index++;
+         current_index = current_index % POWER_AVERAGE_FRAMES;
       }
       else {
          printf("you done screw up on the power loop.");
@@ -272,36 +273,36 @@ int main(int argc, char *argv[]) {
       
       printf("Performance factor\n");
       // Performance factor
-      performanceFactor = compareToSimulation(speedWheel, distanceWheel, (frontPower + rearPower));
+      perfomrance_percentage = compareToSimulation(speed_wheel_km_h, dist_wheel_km, (power_front_w + power_rear_w));
 
       
       // Overlays
       printf("Making overlay\n");
-      if (isFront == true) { // Front overlay
+      if (system_is_front_rider) { // Front overlay
          startTrial();
-         updateOverlayFront(speedWheel, distanceWheel, frontPower, frontCadence, frontHeartRate, performanceFactor, frontBrakeTemp, frontBattery, speedGPS);
+         updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, perfomrance_percentage, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
          endTrialIgnore("front overlay", 100);
       }
       else { // Rear overlay
          startTrial();
-         updateOverlayRear(speedWheel, distanceWheel, rearPower, frontPower, rearCadence, rearHeartRate, frontBrakeTemp, rearBrakeTemp, rearBattery, performanceFactor, ppmCO2, speedGPS);
+         updateOverlayRear(speed_wheel_km_h, dist_wheel_km, power_rear_w, power_front_w, cadence_rear_r_m, heart_rate_rear_b_m, brake_temp_front_c, brake_temp_rear_c, battery_soc_rear_percent, perfomrance_percentage, co2_ppm, speed_gps_km_h);
          endTrialIgnore("rear overlay", 100);
       }
       
       
       // Logging
-      if (enableLogging == true) {
+      if (logging_enabled) {
          printf("Logging\n");
-         updateLog(speedWheel, distanceWheel, frontPower, rearPower, 
-                  frontCadence, rearCadence, frontHeartRate, rearHeartRate, 
-                  temperature, humidity, frontBattery, rearBattery,
-                  frontBrakeTemp, rearBrakeTemp, ppmCO2, performanceFactor,
-                  speedGPS, distanceGPS);
+         updateLog(speed_wheel_km_h, dist_wheel_km, power_front_w, power_rear_w, 
+                  cadence_front_r_m, cadence_rear_r_m, heart_rate_front_b_m, heart_rate_rear_b_m, 
+                  temperature_c, humidity_per, battery_soc_front_percent, battery_soc_rear_percent,
+                  brake_temp_front_c, brake_temp_rear_c, co2_ppm, perfomrance_percentage,
+                  speed_gps_km_h, dist_gps_km);
       }
       
       // Count down number of frames if there was a limit stated
-      if (numberFrames > 0) framesRemaining--;
-   } while ((framesRemaining != 0) || (numberFrames == -1));
+      if (overlay_frames_to_render > 0) overlay_frames_left_to_render--;
+   } while ((overlay_frames_left_to_render != 0) || (overlay_frames_to_render == -1));
    
    // Overal time
    titanProcessClock = clock() - titanProcessClock; // Get run time
@@ -310,8 +311,8 @@ int main(int argc, char *argv[]) {
    
    float overallDelta = (tSystemEnd.tv_sec - tSystemStart.tv_sec) + ((tSystemEnd.tv_nsec - tSystemStart.tv_nsec) / 1000000000.0);
    
-   printf(ANSI_COLOUR_MAGENTA "\nIt took %2.3f processor seconds, %.3f realtime seconds for %d frames.\n" ANSI_COLOUR_RESET, secondsElapsed, overallDelta, numberFrames);
-   printf(ANSI_COLOUR_MAGENTA "An average of %.3f realtime seconds for each frame (%.2f fps).\n" ANSI_COLOUR_RESET, overallDelta / numberFrames, numberFrames / overallDelta);
+   printf(ANSI_COLOUR_MAGENTA "\nIt took %2.3f processor seconds, %.3f realtime seconds for %d frames.\n" ANSI_COLOUR_RESET, secondsElapsed, overallDelta, overlay_frames_to_render);
+   printf(ANSI_COLOUR_MAGENTA "An average of %.3f realtime seconds for each frame (%.2f fps).\n" ANSI_COLOUR_RESET, overallDelta / overlay_frames_to_render, overlay_frames_to_render / overallDelta);
    
    closeOverlay();
    
