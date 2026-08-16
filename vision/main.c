@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
    float dist_wheel_km = 0.0, dist_gps_km = 0.0;
    float temperature_c = 0.0;
    float humidity_per = 0.0;
-   float perfomrance_percentage = 0.0;
+   float performance_percentage = 0.0;
    float brake_temp_front_c = 200.0, brake_temp_rear_c = 200.0;
    int co2_ppm = 0;
    float speed_gps_km_h = 0.0;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
          dist_wheel_km = 7;
          temperature_c = 0.0;
          humidity_per = 0.0;
-         perfomrance_percentage = 101.2;
+         performance_percentage = 101.2;
          brake_temp_front_c = 200.0;
          brake_temp_rear_c = 200.0;
          co2_ppm = 1550;
@@ -273,19 +273,19 @@ int main(int argc, char *argv[]) {
       
       printf("Performance factor\n");
       // Performance factor
-      perfomrance_percentage = compareToSimulation(speed_wheel_km_h, dist_wheel_km, (power_front_w + power_rear_w));
+      performance_percentage = compareToSimulation(speed_wheel_km_h / 3.6, dist_wheel_km / 1000.0, (power_front_w + power_rear_w));
 
       
       // Overlays
       printf("Making overlay\n");
       if (system_is_front_rider) { // Front overlay
          startTrial();
-         updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, perfomrance_percentage, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
+         updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, performance_percentage, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
          endTrialIgnore("front overlay", 100);
       }
       else { // Rear overlay
          startTrial();
-         updateOverlayRear(speed_wheel_km_h, dist_wheel_km, power_rear_w, power_front_w, cadence_rear_r_m, heart_rate_rear_b_m, brake_temp_front_c, brake_temp_rear_c, battery_soc_rear_percent, perfomrance_percentage, co2_ppm, speed_gps_km_h);
+         updateOverlayRear(speed_wheel_km_h, dist_wheel_km, power_rear_w, power_front_w, cadence_rear_r_m, heart_rate_rear_b_m, brake_temp_front_c, brake_temp_rear_c, battery_soc_rear_percent, performance_percentage, co2_ppm, speed_gps_km_h);
          endTrialIgnore("rear overlay", 100);
       }
       
@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
          updateLog(speed_wheel_km_h, dist_wheel_km, power_front_w, power_rear_w, 
                   cadence_front_r_m, cadence_rear_r_m, heart_rate_front_b_m, heart_rate_rear_b_m, 
                   temperature_c, humidity_per, battery_soc_front_percent, battery_soc_rear_percent,
-                  brake_temp_front_c, brake_temp_rear_c, co2_ppm, perfomrance_percentage,
+                  brake_temp_front_c, brake_temp_rear_c, co2_ppm, performance_percentage,
                   speed_gps_km_h, dist_gps_km);
       }
       
