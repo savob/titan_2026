@@ -49,3 +49,12 @@ The compilation process is based on using a `Makefile` so to generate a new `bik
 ```bash
 make
 ```
+
+The full procedure for this is roughly:
+
+- Replace the contents of the `/home/pi/Desktop/vision` on the RPi SD card with the new file(s)
+- Reseat the SD card in the RPi and boot it
+- If the video system starts, tap the power button on the RPi HAT to kill the video system and reveal the terminal
+- Navigate to the vision folder with `cd /home/pi/Desktop/vision`
+- Run `make` in that folder to compile the new binary
+- Reboot the system if no errors occur
