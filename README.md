@@ -14,7 +14,7 @@ The repository is split into folders based on function.
 
 | Folder | Purpose |
 | --- | --- |
-| `documentation` | Collected MarkDown files detailing various parts of running TITAN |
+| `documentation` | Collected MarkDown files detailing various parts of operating TITAN. _NOTE: These are not exhaustive, check the various subsystem `README.md` files for information too!_ |
 | `firmware` | Code for the embedded systems, namely the RPi HAT |
 | `hardware` | Hardware files for our circuit boards |
 | `vision` | Code used to operate the video system on the RPi |
