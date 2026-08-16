@@ -54,7 +54,9 @@ The code can be edited on the RPi itself, and this is fine for any small tweaks 
 
 ### Compiling the Overlay Code
 
-With any changes to the overlay source code, one will need to compile a new `bike.bin` for them to take effect.
+If changes are made to any of the Python files, ending in `.py` then one only needs to save and close the files once satisified with the edits made for them to take effect on the next run.
+
+With any changes to the overlay source code in C in the `.c` or `.h` files, one will need to compile a new `bike.bin` for them to take effect.
 
 >[!IMPORTANT]
 > Regardless of how the code is edited, it **MUST be compiled on an RPi 3 itself**. This is because overlay code makes use of low level video drivers (VideoCore) for the Broadcom chip that runs the RPi 3 computers, as well as some specific features for some timing code. It is for this reason that many of the `#include` statements and constants will likely be flagged as errors on a non-RPi computer.
@@ -62,7 +64,11 @@ With any changes to the overlay source code, one will need to compile a new `bik
 The compilation process is based on using a `Makefile` so to generate a new `bike.bin` simply execute the following command in this folder.
 
 ```bash
+# If changes were only made to .c files
 make
+
+# If changes were made to any .h files a clean will ensure they're properly recompiled with .c files
+make clean; make
 ```
 
 The full procedure for this is roughly:
