@@ -224,7 +224,7 @@ float compareToSimulation (float speed, float position, float power) {
     float performanceFactor = 100.0; // Default to nominal
 
     // Check if it is first call
-    if ((prevSpeed = 0) && (prevPosition = 0) && (prevPower = 0)) {
+    if ((prevSpeed == 0) && (prevPosition == 0) && (prevPower == 0)) {
         // Record data and return with nominal (100%)
         prevSpeed = speed;
         prevPosition = position;
