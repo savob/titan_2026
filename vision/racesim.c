@@ -63,7 +63,6 @@ static const float Crr2 = 0.000005; // 0.000064 * 0.6; // 0.000064 for Pro One, 
 static const float eta = 0.97; // Drive train efficiency
 
 // Simulation parameters
-static const float stepDuration = 0.005;
 static const float distanceEnd = 8000; // Distance to end
 
 // Power Setup
@@ -191,7 +190,7 @@ float compareToSimulation (float speed, float position, float power) {
     
     // figure out passive power loss
     float Paero = -0.5*rho*pow(prevSpeed,3)*CdA_Fcn(Re(prevSpeed));
-    float Prolling = -Crr(prevSpeed)*M*sqrt(g*g)*prevSpeed;
+    float Prolling = -Crr(prevSpeed)*M*g*prevSpeed;
     float Pslope = -slopePolynomial(prevPosition)*prevSpeed*W;
     float Ppassive = Pslope + Prolling + Paero;
 
