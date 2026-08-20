@@ -456,7 +456,7 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 	case MESSAGE_PARSED_OK_NO_RESPONSE:
 		return HAL_OK; // No further action needed
 	case MESSAGE_PARSED_OK_SEND_RESPONSE:
-		if (interface->send_function != NULL) {
+		if (interface->send_function == NULL) {
 #ifdef DEBUG
 			printf("No TX function provided for %s\r\n", interface->name);
 #endif
