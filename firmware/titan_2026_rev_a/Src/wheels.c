@@ -62,7 +62,13 @@ HAL_StatusTypeDef setup_brake_disk_sensors(I2C_HandleTypeDef* bus, uint32_t time
 
 HAL_StatusTypeDef operate_brake_disk_sensors(float* front_temp_c, float* rear_temp_c) {
 	static uint32_t next_tick_mark = 0;
+
+#ifdef DEBUG
+	const uint32_t PERIOD_MS = 1000;
+#else
 	const uint32_t PERIOD_MS = 100;
+#endif
+
 	if (HAL_GetTick() < next_tick_mark) return HAL_OK;
 	next_tick_mark = HAL_GetTick() + PERIOD_MS;
 
@@ -81,6 +87,9 @@ HAL_StatusTypeDef operate_brake_disk_sensors(float* front_temp_c, float* rear_te
 	}
 	else *rear_temp_c = 0;
 
+#ifdef DEBUG
+	printf("Brake Temp [*C][Error: %d] F|R: %6.2f | %6.2f\n\r", ret_overall, *front_temp_c, *rear_temp_c);
+#endif
 	return ret_overall;
 }
 
