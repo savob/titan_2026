@@ -23,12 +23,12 @@ There is circuitry to allow TITAN RPi HATs to seamlessly and safely switch betwe
 With TITAN assembled correctly the process to launch the system is pretty straight forward.
 
 > [!CAUTION]
-> Failure to follow the battery connection sequence properly may damage the hardware.
+> Failure to follow the battery connection sequence properly may damage the hardware or hinder system operation.
 
 1. Ensure batteries are fully charged
 2. Plug in the batteries following this exact order. Each system should automatically begin booting when their battery is connected
-   1. Primary (front) system
-   2. Secondary (rear) system
+   1. Secondary (rear) system
+   2. Primary (front) system
    3. Backup system
 3. Press the power button (`PWR_RPi`) on RPi systems to boot them if needed - for example if they were shutdown without battery removal
 
@@ -49,8 +49,8 @@ Whenever power is going to be removed from TITAN the following procedure should 
    - As the RPi shuts down its status LED will flash ten times at 2&nbsp;Hz before going out, that signals it is safe to remove power
 3. If desired, disconnect the batteries. They **MUST** be removed in the reverse order they were installed in:
    1. Backup display
-   2. Secondary system
-   3. Primary system
+   2. Primary system
+   3. Secondary system
 
 If the batteries are left in place after the RPis are shutdown, the RPis can be turned on at the press of the power button (`PWR_RPi`). This is useful to do for staging before a run. There is no required order to follow when turning on RPis in this manner because the power supplies have all stabilized.
 
