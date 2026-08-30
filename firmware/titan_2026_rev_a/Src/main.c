@@ -242,7 +242,7 @@ int main(void)
 	ret = atmo_setup(&MAIN_I2C, I2C_TIMEOUT);
 	if (ret != HAL_OK) non_critical_error = true;
 
-	ret = setup_brake_disk_sensors(&MAIN_I2C, I2C_TIMEOUT);
+	ret = setup_brake_disk_sensors(&WHEEL_I2C, I2C_TIMEOUT);
 	if (ret != HAL_OK) non_critical_error = true;
 
 	const uint16_t GPS_BUFFER_SIZE = 500;
