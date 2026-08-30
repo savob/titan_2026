@@ -1,11 +1,5 @@
-/*
- * mlx90614.c
- *
- *  Created on: Jul 26, 2026
- *      Author: savo
- */
-
 #include "mlx90614.h"
+
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_i2c.h"
 
@@ -31,6 +25,10 @@ enum MLXRegisterAddress {
 };
 
 static const uint32_t I2C_TIMEOUT = 1;
+
+static HAL_StatusTypeDef _write_16_eeprom(struct MLXDevice target, uint8_t reg_address, uint16_t value);
+static HAL_StatusTypeDef _write_16(struct MLXDevice target, uint8_t reg_address, uint16_t value);
+static HAL_StatusTypeDef _read_16(struct MLXDevice target, uint8_t reg_address, uint16_t* destination); // Used for EEPROM or normal registers
 
 static uint8_t _crc8(uint8_t* addr, uint8_t len) {
 	// The PEC calculation includes all bits except the START, REPEATED START, STOP,
@@ -66,8 +64,13 @@ static HAL_StatusTypeDef _write_16_eeprom(struct MLXDevice target, uint8_t reg_a
 	HAL_Delay(10);
 	ret = _write_16(target, reg_address, value);
 	if (ret != HAL_OK) return ret;
-
 	HAL_Delay(10);
+
+	uint16_t readback_val = 0;
+	ret = _read_16(target, reg_address, &readback_val);
+	if (ret != HAL_OK) return ret;
+
+	if (readback_val != value) return HAL_ERROR;
 	return HAL_OK;
 }
 
