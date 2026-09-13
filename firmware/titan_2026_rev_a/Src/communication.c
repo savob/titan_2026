@@ -402,7 +402,7 @@ HAL_StatusTypeDef setup_interface(struct CommunicationInterface* interface) {
 		}
 
 		if (ret != HAL_OK) {
-			printf("Failed to start %s input buffer error code: %d\n\r", interface->name, ret);
+			printf("Failed to start %s input buffer error code: %ld - %d\n\r", interface->name, interface->uart->ErrorCode, ret);
 			Error_Handler();
 		}
 		else if (attempts > 1){
@@ -447,7 +447,7 @@ HAL_StatusTypeDef operate_interface(struct CommunicationInterface* interface, vo
 			if (ret != HAL_OK) HAL_Delay(ATTEMPT_PERIOD_MS);
 		}
 		if (ret != HAL_OK) {
-			printf("Failed to start %s input buffer. Error code: %d\n\r", interface->name, ret);
+			printf("Failed to start %s input buffer. Error code: %ld - %d\n\r", interface->name, interface->uart->ErrorCode, ret);
 			Error_Handler(); // Not restarting RX is critical
 		}
 	}
