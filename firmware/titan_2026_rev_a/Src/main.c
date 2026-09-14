@@ -317,7 +317,7 @@ int main(void)
 	}
 	else {
 		printf("nRF24 not detected, broadcasting will be disabled\n\r");
-		non_critical_error = true;
+		// non_critical_error = true; // Radio not installed on any boards used for TITAN so ignore issues
 	}
 
 	if (critical_error) {
