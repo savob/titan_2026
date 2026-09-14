@@ -39,17 +39,17 @@ rear_hrm_channel = [40,120,1]
 
 # List of our devices
 # device_number, device_type, transmission_type
-calvin_pedals_channel = [30567,11,165] # Calvin's Pedals
-calvin_hrm_channel = [52247, 120, 1] # Calvin's HRM
-evan_pedals_channel = [36424,11,5] # Evan's Pedals
-evan_hrm_channel = [41034, 120, 1] # Evan's HRM
+calvin_pedals_channel = [45093,11,213] # Calvin's Pedals
+calvin_hrm_channel = [63073, 120, 1] # Calvin's HRM
+ethan_pedals_channel = [21593,11,165] # Ethan's Pedals
+ethan_hrm_channel = [1860, 120, 1] # Ethan's HRM 
 
 # Actual channels used, if uncommented
 front_pwr_channel = calvin_pedals_channel
 front_hrm_channel = calvin_hrm_channel
 
-rear_pwr_channel = evan_pedals_channel
-rear_hrm_channel = evan_hrm_channel
+rear_pwr_channel = ethan_pedals_channel
+rear_hrm_channel = ethan_hrm_channel
 
 print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!\nREAL CHANNEL DATA LOADED\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 
