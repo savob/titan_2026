@@ -35,6 +35,7 @@ void renderFPower(int power);
 void renderFHR(int heartRate);
 
 const float KM_TO_MI = 1.602; // Kilometers to miles
+const float COURSE_LEN = 8.047; // meters
 
 // Global variables
 GRAPHICS_RESOURCE_HANDLE overlayImg; // Overlay
@@ -97,7 +98,9 @@ void renderFDist(float dist) {
    char temp[50];
    
    // Convert km travelled to miles remaining
-   dist = 5.0 - (dist / KM_TO_MI);
+   // dist = 5.0 - (dist / KM_TO_MI);
+
+   dist = COURSE_LEN - dist;
    
    sprintf(temp, "DIST: %1.2f", dist);
    renderTextAligned(temp, 10, 45, 30, WHITE, GREY_BG,'l','t');
@@ -124,7 +127,12 @@ void renderFBatteryPercentage(int battPer) {
 
 void renderFSpeed(float speed, float gpsSpeed) {
    char temp[50];
-   sprintf(temp, "SPD/GSPD: %4.1f / %4.1f", speed/KM_TO_MI, gpsSpeed/KM_TO_MI);
+   if (speed < 300) {
+      sprintf(temp, "SPD/GSPD: %4.1f / %4.1f", speed/KM_TO_MI, gpsSpeed/KM_TO_MI);
+   } else {
+      sprintf(temp, "SPD/GSPD: --.- / %4.1f", gpsSpeed/KM_TO_MI);
+   }
+
    renderTextAligned(temp, 10, 10, 30, WHITE, GREY_BG,'l','t');
 }
 
@@ -171,7 +179,9 @@ void renderRDist(float dist) {
    char temp[50];
    
    // Convert km travelled to miles remaining
-   dist = 5.0 - (dist / KM_TO_MI);
+   // dist = COURSE_LEN / KM_TO_MI - (dist / KM_TO_MI);
+
+   dist = COURSE_LEN - dist;
    
    sprintf(temp, "DIST: %1.2f", dist);
    renderTextAligned(temp, 10, 65, 50, WHITE, GREY_BG,'l','t');
@@ -198,7 +208,11 @@ void renderRBatteryPercentage(int battPer) {
 
 void renderRSpeed(float speed, float gpsSpeed) {
    char temp[50];
-   sprintf(temp, "SPD/GSPD: %4.1f / %4.1f", speed/KM_TO_MI, gpsSpeed/KM_TO_MI);
+   if (speed < 300) {
+      sprintf(temp, "SPD/GSPD: %4.1f / %4.1f", speed/KM_TO_MI, gpsSpeed/KM_TO_MI);
+   } else {
+      sprintf(temp, "SPD/GSPD: --.- / %4.1f", gpsSpeed/KM_TO_MI);
+   }
    renderTextAligned(temp, 10, 10, 50, WHITE, GREY_BG,'l','t');
 }
 
