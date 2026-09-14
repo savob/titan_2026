@@ -1307,9 +1307,29 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	HAL_IWDG_Refresh(&hiwdg); // Allow the lights to flash for a bit before we recover
 
-	if (huart == &GPS_UART) printf("Error %ld on GPS line\r\n", huart->ErrorCode);
-	if (huart == &PRIM_UART) printf("Error %ld on primary line\r\n", huart->ErrorCode);
-	if (huart == &SEC_UART) printf("Error %ld on secondary line\r\n", huart->ErrorCode);
+	uint32_t error_code = huart->ErrorCode;
+
+	if (error_code == HAL_UART_ERROR_ORE) {
+		// As per 27.6.1 in reference manual we can clear this error flag by reading SR and then DR
+		(void) huart->Instance->SR;
+		(void) huart->Instance->DR;
+		if (huart->ErrorCode == HAL_UART_ERROR_ORE) {
+			if (huart == &GPS_UART) printf("Error OVERRUN on GPS line PERSISTS\r\n");
+			if (huart == &PRIM_UART) printf("Error OVERRUN on primary line PERSISTS\r\n");
+			if (huart == &SEC_UART) printf("Error OVERRUN on secondary line PERSISTS\r\n");
+		}
+		else {
+			if (huart == &GPS_UART) printf("Error OVERRUN on GPS line CLEARED. Comms may need a few transactions to recover fully.\r\n");
+			if (huart == &PRIM_UART) printf("Error OVERRUN on primary line CLEARED. Comms may need a few transactions to recover fully.\r\n");
+			if (huart == &SEC_UART) printf("Error OVERRUN on secondary line CLEARED. Comms may need a few transactions to recover fully.\r\n");
+			return;
+		}
+	}
+	else {
+		if (huart == &GPS_UART) printf("Error %ld on GPS line\r\n", error_code);
+		if (huart == &PRIM_UART) printf("Error %ld on primary line\r\n", error_code);
+		if (huart == &SEC_UART) printf("Error %ld on secondary line\r\n", error_code);
+	}
 
 	Error_Handler();
 }
