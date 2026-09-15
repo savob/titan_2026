@@ -816,6 +816,9 @@ bool minmea_process_buffer(char buffer[], const size_t BUFFER_LENGTH, struct GPS
 	}
 	else summary->distance_from_start_km = 0;
 
+    const float GPS_SPEED_TO_KMPH = 1.852; // Assuming GPS provides speed in knots
+    summary->speed_kmph = GPS_SPEED_TO_KMPH * summary->speed_kmph;
+
 	return all_parsed_ok;
 }
 
