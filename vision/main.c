@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
    do {
       
       // ANT data
-      printf("Grabbing ANT data\n");
+      // printf("Grabbing ANT data\n");
       if (collecting_ant_data == true) getANTDataPipedIn(ANTData, serial_line_in_use);      // It is meant to collect data locally
       else if (using_serial_data == false) { 
          // Cant' collect nor request ANT data, use random numbers
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
       
       // Get bike data
       if (using_serial_data) { // Collect bike data from STM32 over serial      
-         printf("Grabbing serial data\n");
+         // printf("Grabbing serial data\n");
          
          char bulkBuffer[32];
          startTrial(); 
@@ -238,43 +238,38 @@ int main(int argc, char *argv[]) {
       // Get average power over POWER_AVERAGE_FRAMES frames 
       // 10 frames/second, power sensor polls 1 times/second 
       // This does a continuous (rolling) average instead of a periodic average
-      if (true) {
-         // printf("Averaging power\n");
-         static int front_power_values[POWER_AVERAGE_FRAMES], rear_power_values[POWER_AVERAGE_FRAMES];
-         static int current_index = 0;
-         
-         // Add current power to rolling buffer
-         front_power_values[current_index] = power_front_w;
-         rear_power_values[current_index] = power_rear_w;
-         
-         // Determine average value for each buffer and save it
-         long frontPowerTotal = 0;
-         long rearPowerTotal = 0;
-         
-         for (int i = 0; i < POWER_AVERAGE_FRAMES; i++) {
-            frontPowerTotal = frontPowerTotal + front_power_values[i];
-            rearPowerTotal = rearPowerTotal + rear_power_values[i];
-         }
-         
-         power_front_w = frontPowerTotal / POWER_AVERAGE_FRAMES;
-         power_rear_w = rearPowerTotal / POWER_AVERAGE_FRAMES;
-         
-         // Increment and loop current frame index
-         current_index++;
-         current_index = current_index % POWER_AVERAGE_FRAMES;
-      }
-      else {
-         printf("you done screw up on the power loop.");
+      // printf("Averaging power\n");
+      static int front_power_values[POWER_AVERAGE_FRAMES], rear_power_values[POWER_AVERAGE_FRAMES];
+      static int current_index = 0;
+      
+      // Add current power to rolling buffer
+      front_power_values[current_index] = power_front_w;
+      rear_power_values[current_index] = power_rear_w;
+      
+      // Determine average value for each buffer and save it
+      long frontPowerTotal = 0;
+      long rearPowerTotal = 0;
+      
+      for (int i = 0; i < POWER_AVERAGE_FRAMES; i++) {
+         frontPowerTotal = frontPowerTotal + front_power_values[i];
+         rearPowerTotal = rearPowerTotal + rear_power_values[i];
       }
       
+      power_front_w = frontPowerTotal / POWER_AVERAGE_FRAMES;
+      power_rear_w = rearPowerTotal / POWER_AVERAGE_FRAMES;
       
-      printf("Performance factor\n");
+      // Increment and loop current frame index
+      current_index++;
+      current_index = current_index % POWER_AVERAGE_FRAMES;
+      
+      
+      // printf("Performance factor\n");
       // Performance factor
       performance_percentage = compareToSimulation(speed_wheel_km_h / 3.6, dist_wheel_km / 1000.0, (power_front_w + power_rear_w));
 
       
       // Overlays
-      printf("Making overlay\n");
+      // printf("Making overlay\n");
       if (system_is_front_rider) { // Front overlay
          startTrial();
          updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, performance_percentage, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
@@ -289,7 +284,7 @@ int main(int argc, char *argv[]) {
       
       // Logging
       if (logging_enabled) {
-         printf("Logging\n");
+         // printf("Logging\n");
          updateLog(speed_wheel_km_h, dist_wheel_km, power_front_w, power_rear_w, 
                   cadence_front_r_m, cadence_rear_r_m, heart_rate_front_b_m, heart_rate_rear_b_m, 
                   temperature_c, humidity_per, battery_soc_front_percent, battery_soc_rear_percent,
