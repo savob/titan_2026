@@ -138,7 +138,7 @@ void renderFSpeed(float speed, float gpsSpeed) {
 
 void renderFPerfPercentage(float perfPer) {
    char temp[50];
-   sprintf(temp, "PERF: %5.0f", perfPer);
+   sprintf(temp, "PERF: %5.1f", perfPer);
 
    char *colourToUse = colourByValue(perfPer, lowerPerfLimit, upperPerfLimit, RED, YELLOW, GREEN);
 
@@ -218,7 +218,7 @@ void renderRSpeed(float speed, float gpsSpeed) {
 
 void renderRPerfPercentage(float perfPer) {
    char temp[50];
-   sprintf(temp, "PERF: %5f", perfPer);
+   sprintf(temp, "PERF: %5.1f", perfPer);
 
    char *colourToUse = colourByValue(perfPer, lowerPerfLimit, upperPerfLimit, RED, YELLOW, GREEN);
 
