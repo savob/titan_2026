@@ -1,5 +1,5 @@
 #include "main.h"
-#define POWER_AVERAGE_FRAMES 50 // Needs to be #define for array sizes
+#define VALUE_AVERAGE_FRAMES 50 // Needs to be #define for array sizes
 
 int overlay_frames_to_render = -1; // Number of frames to render for testing (-1 for infinite)
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
    float dist_wheel_km = 0.0, dist_gps_km = 0.0;
    float temperature_c = 0.0;
    float humidity_per = 0.0;
-   float performance_percentage = 0.0;
+   float performance_percentage_average = 0.0;
    float brake_temp_front_c = 200.0, brake_temp_rear_c = 200.0;
    int co2_ppm = 0;
    float speed_gps_km_h = 0.0;
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
          dist_wheel_km = 7;
          temperature_c = 0.0;
          humidity_per = 0.0;
-         performance_percentage = 101.2;
+         performance_percentage_average = 101.2;
          brake_temp_front_c = 200.0;
          brake_temp_rear_c = 200.0;
          co2_ppm = 1550;
@@ -235,13 +235,18 @@ int main(int argc, char *argv[]) {
          dist_gps_km = 6.92;
       }
       
-      // Get average power over POWER_AVERAGE_FRAMES frames 
+      // Get average power and performance over VALUE_AVERAGE_FRAMES frames 
       // 10 frames/second, power sensor polls 1 times/second 
       // This does a continuous (rolling) average instead of a periodic average
       // printf("Averaging power\n");
-      static int front_power_values[POWER_AVERAGE_FRAMES], rear_power_values[POWER_AVERAGE_FRAMES];
+      static int front_power_values[VALUE_AVERAGE_FRAMES], rear_power_values[VALUE_AVERAGE_FRAMES];
+      static float performance_values[VALUE_AVERAGE_FRAMES];
       static int current_index = 0;
       
+      // printf("Performance factor\n");
+      // Performance factor
+      performance_values[current_index] = compareToSimulation(speed_wheel_km_h / 3.6, dist_wheel_km / 1000.0, (power_front_w + power_rear_w));
+
       // Add current power to rolling buffer
       front_power_values[current_index] = power_front_w;
       rear_power_values[current_index] = power_rear_w;
@@ -249,35 +254,33 @@ int main(int argc, char *argv[]) {
       // Determine average value for each buffer and save it
       long frontPowerTotal = 0;
       long rearPowerTotal = 0;
+      performance_percentage_average = 0;
       
-      for (int i = 0; i < POWER_AVERAGE_FRAMES; i++) {
+      for (int i = 0; i < VALUE_AVERAGE_FRAMES; i++) {
          frontPowerTotal = frontPowerTotal + front_power_values[i];
          rearPowerTotal = rearPowerTotal + rear_power_values[i];
+         performance_percentage_average = performance_percentage_average + performance_values[i];
       }
       
-      power_front_w = frontPowerTotal / POWER_AVERAGE_FRAMES;
-      power_rear_w = rearPowerTotal / POWER_AVERAGE_FRAMES;
+      power_front_w = frontPowerTotal / VALUE_AVERAGE_FRAMES;
+      power_rear_w = rearPowerTotal / VALUE_AVERAGE_FRAMES;
+      performance_percentage_average = performance_percentage_average / ((float)VALUE_AVERAGE_FRAMES);
       
       // Increment and loop current frame index
       current_index++;
-      current_index = current_index % POWER_AVERAGE_FRAMES;
-      
-      
-      // printf("Performance factor\n");
-      // Performance factor
-      performance_percentage = compareToSimulation(speed_wheel_km_h / 3.6, dist_wheel_km / 1000.0, (power_front_w + power_rear_w));
+      current_index = current_index % VALUE_AVERAGE_FRAMES;
 
-      
+
       // Overlays
       // printf("Making overlay\n");
       if (system_is_front_rider) { // Front overlay
          startTrial();
-         updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, performance_percentage, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
+         updateOverlayFront(speed_wheel_km_h, dist_wheel_km, power_front_w, cadence_front_r_m, heart_rate_front_b_m, performance_percentage_average, brake_temp_front_c, battery_soc_front_percent, speed_gps_km_h);
          endTrialIgnore("front overlay", 100);
       }
       else { // Rear overlay
          startTrial();
-         updateOverlayRear(speed_wheel_km_h, dist_wheel_km, power_rear_w, power_front_w, cadence_rear_r_m, heart_rate_rear_b_m, brake_temp_front_c, brake_temp_rear_c, battery_soc_rear_percent, performance_percentage, co2_ppm, speed_gps_km_h);
+         updateOverlayRear(speed_wheel_km_h, dist_wheel_km, power_rear_w, power_front_w, cadence_rear_r_m, heart_rate_rear_b_m, brake_temp_front_c, brake_temp_rear_c, battery_soc_rear_percent, performance_percentage_average, co2_ppm, speed_gps_km_h);
          endTrialIgnore("rear overlay", 100);
       }
       
@@ -288,7 +291,7 @@ int main(int argc, char *argv[]) {
          updateLog(speed_wheel_km_h, dist_wheel_km, power_front_w, power_rear_w, 
                   cadence_front_r_m, cadence_rear_r_m, heart_rate_front_b_m, heart_rate_rear_b_m, 
                   temperature_c, humidity_per, battery_soc_front_percent, battery_soc_rear_percent,
-                  brake_temp_front_c, brake_temp_rear_c, co2_ppm, performance_percentage,
+                  brake_temp_front_c, brake_temp_rear_c, co2_ppm, performance_percentage_average,
                   speed_gps_km_h, dist_gps_km);
       }
       
