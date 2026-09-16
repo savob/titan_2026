@@ -2,7 +2,6 @@
 #define POWER_AVERAGE_FRAMES 50 // Needs to be #define for array sizes
 
 int overlay_frames_to_render = -1; // Number of frames to render for testing (-1 for infinite)
-const float WHEEL_CIRCUMFERENCE_M = 2.136;
 
 // Serial configuration
 bool using_serial_data = false; // Use serial or not
@@ -77,7 +76,6 @@ int main(int argc, char *argv[]) {
    int heart_rate_front_b_m = 0, heart_rate_rear_b_m = 0;
    int ANTData[] = {0,0,0,0,0,0};
    int battery_soc_rear_percent = 0, battery_soc_front_percent = 0;
-   int wheel_rotations = 0;
    float speed_wheel_km_h = 0.0;
    float dist_wheel_km = 0.0, dist_gps_km = 0.0;
    float temperature_c = 0.0;
@@ -169,7 +167,7 @@ int main(int argc, char *argv[]) {
             uint16_t distGPS;
             uint32_t speedEncoder;
             uint32_t speedGPS;
-            uint16_t rotations;
+            uint16_t distance_m;
             uint16_t frontBrakeT;
             uint16_t rearBrakeT;
             uint8_t fBatt;
@@ -191,7 +189,6 @@ int main(int argc, char *argv[]) {
          dist_gps_km = dataLoad.distGPS / 1000.0;
          speed_wheel_km_h = dataLoad.speedEncoder / 1000.0;
          speed_gps_km_h = dataLoad.speedGPS / 1000.0;
-         wheel_rotations = dataLoad.rotations;
          brake_temp_front_c = dataLoad.frontBrakeT / 100.0;
          brake_temp_rear_c =dataLoad.rearBrakeT / 100.0;
          battery_soc_front_percent = dataLoad.fBatt;
@@ -208,7 +205,7 @@ int main(int argc, char *argv[]) {
 
          endTrialIgnore("Bulk transfer", 30);
 
-         dist_wheel_km = wheel_rotations * WHEEL_CIRCUMFERENCE_M / 1000.0;
+         dist_wheel_km = ((float)dataLoad.distance_m) / 1000.0;
          
          /*
          printf("Message type: %c, length char %c\n", dataLoad.messageType, dataLoad.messageLength);
