@@ -41,7 +41,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern const float WHEEL_CIRCUMFERENCE_M; // Effective wheel circumference in metres
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

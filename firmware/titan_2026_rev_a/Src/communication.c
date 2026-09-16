@@ -8,13 +8,13 @@
 #include <string.h>
 #include <stdio.h>
 
-struct bulkDataStruct {
+struct BulkDataStruct {
 	char messageType;
 	char messageLength;
-	uint16_t distGPS;;
+	uint16_t distGPS;
 	uint32_t speedEncoder __attribute__((packed));
 	uint32_t speedGPS __attribute__((packed));
-	uint16_t rotations __attribute__((packed));
+	uint16_t distance_m __attribute__((packed));
 	uint16_t frontBrakeT __attribute__((packed));
 	uint16_t rearBrakeT __attribute__((packed));
 	uint8_t fBatt;
@@ -116,15 +116,15 @@ enum MessageStatus process_message(volatile struct TitanSummary* summary, const 
 
 	// Handling the summary messages first since they're more common
 	if (message_in_type == '{') {
-		if (msg_out_buf_size < sizeof(struct bulkDataStruct)) return MESSAGE_RESPONSE_ISSUE;
+		if (msg_out_buf_size < sizeof(struct BulkDataStruct)) return MESSAGE_RESPONSE_ISSUE;
 
-		struct bulkDataStruct dataLoad = {0};
+		struct BulkDataStruct dataLoad = {0};
 		dataLoad.messageType = '[';
 		dataLoad.messageLength = sizeof(dataLoad) - 2 + 31;
 		dataLoad.distGPS = summary->gps.distance_from_start_km * 1000;
-		dataLoad.speedEncoder = summary->effective_speed_kmph * 1000;
-		dataLoad.speedGPS = summary->gps.speed_kmph * 1000;
-		dataLoad.rotations = summary->effective_rotations;
+		dataLoad.speedEncoder = (uint32_t)summary->effective_speed_kmph * 1000;
+		dataLoad.speedGPS = (uint32_t)summary->gps.speed_kmph * 1000;
+		dataLoad.distance_m = summary->effective_distance_m;
 		dataLoad.frontBrakeT = summary->front_wheel.brake_disk_temperature_c * 100;
 		dataLoad.rearBrakeT = summary->rear_wheel.brake_disk_temperature_c * 100;
 		dataLoad.fBatt = summary->primary_battery_soc;
@@ -139,8 +139,8 @@ enum MessageStatus process_message(volatile struct TitanSummary* summary, const 
 		dataLoad.fpwr = summary->front_rider.power_w;
 		dataLoad.rpwr = summary->rear_rider.power_w;
 
-		memcpy(msg_out, &dataLoad, sizeof(struct bulkDataStruct));
-		*length_to_send = sizeof(struct bulkDataStruct);
+		memcpy(msg_out, &dataLoad, sizeof(struct BulkDataStruct));
+		*length_to_send = sizeof(struct BulkDataStruct);
 
 		return MESSAGE_PARSED_OK_SEND_RESPONSE;
 	}

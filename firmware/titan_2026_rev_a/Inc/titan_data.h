@@ -46,6 +46,7 @@ struct TitanSummary {
 	struct WheelStatus front_wheel;
 	struct WheelStatus rear_wheel;
 	int32_t effective_rotations; // Allow upper level logic to decide what gets communicated as the rotations
+	int32_t effective_distance_m;
 	float effective_speed_kmph;
 
 	struct GPSData gps;

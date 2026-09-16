@@ -111,6 +111,7 @@ void summarize_wheel_data(volatile struct TitanSummary* summary) {
 		if (front_rotations > rear_rotations) summary->effective_rotations = front_rotations;
 		else summary->effective_rotations = rear_rotations;
 	}
+	summary->effective_distance_m = (int32_t)((float)summary->effective_rotations * WHEEL_CIRCUMFERENCE_M);
 
 	const float SPEED_TOLERANCE_KMPH = 3.0;
 	float delta_speed = front_speed - rear_speed;

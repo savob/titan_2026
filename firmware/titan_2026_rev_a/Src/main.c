@@ -88,6 +88,8 @@ uint8_t tx_addr[5] = {'2', 'N', 'o', 'd', 'e'};
 
 const uint8_t LED_ERROR = 1;
 const uint8_t LED_GPS = 2;
+
+const float WHEEL_CIRCUMFERENCE_M = 2.103;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -1196,11 +1198,11 @@ PUTCHAR_PROTOTYPE
 }
 
 inline static void update_wheel_status(volatile struct WheelStatus* status, uint32_t capture_period_count) {
-	const float CIRCUMFERENCE_M = 2.136; // Wheel circumference
-	const uint8_t SPOKES = 6; // The number of spokes (counts) per complete wheel rotation
-	const float US_PER_COUNT = 3.0; // The number of microseconds per clock tick
+	// Using #define to compile hardcoded constant
+#define SPOKES 6.0 // The number of spokes (counts) per complete wheel rotation
+#define US_PER_COUNT 3.0 // The number of microseconds per clock tick
 
-	const float COUNT_TO_KM_P_H = 3600000.0 * CIRCUMFERENCE_M / ((float)SPOKES * US_PER_COUNT); // Divide this by period in count to get speed in km/h
+#define COUNT_TO_KM_P_H (3600000.0 * WHEEL_CIRCUMFERENCE_M / (SPOKES * US_PER_COUNT)) // Divide this by period in count to get speed in km/h
 
 	float speed_km_p_h = COUNT_TO_KM_P_H / (float)(capture_period_count);
 
@@ -1211,6 +1213,10 @@ inline static void update_wheel_status(volatile struct WheelStatus* status, uint
 		status->spoke = 0;
 		status->rotations++;
 	}
+
+#undef SPOKES
+#undef US_PER_COUNT
+#undef COUNT_TO_KM_P_H
 }
 
 inline static uint16_t calculate_co2_ppm(uint32_t duty_count, uint32_t period_count) {
