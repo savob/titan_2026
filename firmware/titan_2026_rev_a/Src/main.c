@@ -81,8 +81,6 @@ volatile struct TitanSummary summary __attribute__((noinit)); // Preserve data i
 const float STARTING_LONGITUDE = -117.043375;
 const float STARTING_LATITUDE = 40.393598;
 
-#define PLD_S 4
-
 uint8_t rx_addr[5] = {'1', 'N', 'o', 'd', 'e'};
 uint8_t tx_addr[5] = {'2', 'N', 'o', 'd', 'e'};
 
