@@ -106,7 +106,7 @@ void summarize_wheel_data(volatile struct TitanSummary* summary) {
 
 	const int32_t ROTATION_TOLERANCE = 50;
 	int32_t delta_rotations = front_rotations - rear_rotations;
-	if (delta_rotations < abs(ROTATION_TOLERANCE)) summary->effective_rotations = (front_rotations + rear_rotations) >> 2; // Shift to speed up division
+	if (abs(delta_rotations) < ROTATION_TOLERANCE) summary->effective_rotations = (front_rotations + rear_rotations) >> 2; // Shift to speed up division
 	else {
 		if (front_rotations > rear_rotations) summary->effective_rotations = front_rotations;
 		else summary->effective_rotations = rear_rotations;
