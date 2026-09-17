@@ -328,6 +328,9 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
+#ifdef DEBUG
+		uint32_t start_loop = MICROS_TIMER.Instance->CNT;
+#endif
 		HAL_IWDG_Refresh(&hiwdg);
 
 		if (non_critical_error) {
@@ -418,6 +421,14 @@ int main(void)
 			}
 			next_broadcast_tick = BROADCAST_PERIOD_MS + CURRENT_TICK;
 		}
+
+#ifdef DEBUG
+		uint32_t end_loop = MICROS_TIMER.Instance->CNT;
+		uint32_t delta_loop = end_loop - start_loop;
+		if (end_loop < start_loop) delta_loop = (end_loop + UINT16_MAX) - start_loop; // Handle rollovers
+
+		printf("Loop took about %lu us\n\r", delta_loop);
+#endif
 	}
   /* USER CODE END 3 */
 }
