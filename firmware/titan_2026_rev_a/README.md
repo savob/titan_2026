@@ -3,7 +3,20 @@
 This is the code meant to operate the entire system. It is meant to be flashed onto bothe boards present in the bike, regardless of position, they will determine their role based on the connections made to them on boot and act appropriately for their role. This firmware was written to provide a transparent replacement for the original 2022 system, so the vision systems can interact with it just like they did with the previous board.
 
 >[!NOTE]
-> The only major difference is from the previous firmware is that **we are completely ignoring the DHT11 sensor** as it is very slow to update and requires a long blocking read which would ruin the general responsiveness of TITAN. In its place there is an on board [BME280](https://www.bosch-sensortec.com/en/products/environmental-sensors/humidity-sensors-bme280) sensor to provide the same data in a much faster way, the only downside is that by being mounted on the board it will not be able to accurately measure the outside environment and it'll likely deal with self-heating from the RPi underneath it.
+> Although this was meant to facilitate a transparent replacement of the old TITAN electronics system, there are some changes which do slighly break compatibility with the old vision system outlined in the [section on changes](#differences-from-titan-2022).
+
+## Status LEDs
+
+There are three status LEDs located centrally on the board used for various purposes. They are labelled `STATx`, `STAT1` is red while `STAT2` and `STAT3` are white. All these LEDs can be dimmed. Below is a table summarizing various status LED states. If "X" is used then that light doesn't matter to communicate something - for example with non-critical errors. When an LED is "cycling" it is gradually brightening up to a point where it turns off and restarts; the brightness effectively following a sawtooth pattern.
+
+| `STAT1` (Red) | `STAT2` (White) | `STAT3` (White) | Meaning |
+| :---: | :---: | :---: | :--- |
+| Flashing Quickly | OFF | OFF | **Critical error encountered, microcontroller will reboot momentarily!** _Note: this will not interrupt the video systems._ |
+| Cycling dimmly | X | X | **Non-critical issue encountered**, sensor system will continue to fulfil its role in a dimished state. _A sensor might be disconnected._ |
+| OFF | X | X | **No issues detected** in by this board as this role. |
+| X | OFF | ON | Board is operating as the **secondary board**. |
+| X | Cycling | ON | Board is operating as the **primary system, GPS lock in progress.** |
+| X | ON | ON | Board is operating as the **primary system, GPS lock completed.** |
 
 ## Primary Role (Front Rider)
 
@@ -18,18 +31,11 @@ When starting up it will check for all the sensors it expects in the system, sho
 
 When the microcontroller determines it is serving on the secondary system is simply illuminates the status LEDs to indicate this and enters an infinite loop of idling so it doesn't interfere with the operation of the system. No information is collected by or passed through the microcontroller in this role.
 
-## Status LEDs
+## Differences from TITAN 2022
 
-There are three status LEDs located centrally on the board used for various purposes. They are labelled `STATx`, `STAT1` is red while `STAT2` and `STAT3` are white. All these LEDs can be dimmed. Below is a table summarizing various status LED states. If "X" is used then that light doesn't matter to communicate something - for example with non-critical errors. When an LED is "cycling" it is gradually brightening up to a point where it turns off and restarts; the brightness effectively following a sawtooth pattern.
+There is **one breaking change** from 2022 which will cause unexpected behaviour on the vision system: instead of reporting the encoder-based (wheel) distance in rotations to the vision system _(which then multiplied it by the wheel circumference itself)_, that distance is now expressed directly as metres to the vision system. This removes the need to maintain the wheel circumference on the vision systems in addition to the microcontroller. The vision code in this repository is compatible with this new method.
 
-| `STAT1` (Red) | `STAT2` (White) | `STAT3` (White) | Meaning |
-| :---: | :---: | :---: | :--- |
-| Flashing Quickly | OFF | OFF | **Critical error encountered, microcontroller will reboot momentarily!** _Note: this will not interrupt the video systems._ |
-| Cycling dimmly | X | X | **Non-critical issue encountered**, sensor system will continue to fulfil its role in a dimished state. _A sensor might be disconnected._ |
-| OFF | X | X | **No issues detected** in by this board as this role. |
-| X | OFF | ON | Board is operating as the **secondary board**. |
-| X | Cycling | ON | Board is operating as the **primary system, GPS lock in progress.** |
-| X | ON | ON | Board is operating as the **primary system, GPS lock completed.** |
+Another, minor but not breaking difference is from before is that **we are completely ignoring the DHT11 sensor** as it is very slow to update and requires a long blocking read which would ruin the general responsiveness of TITAN. In its place there is an on board [BME280](https://www.bosch-sensortec.com/en/products/environmental-sensors/humidity-sensors-bme280) sensor to provide the same data in a much faster way, the only downside is that by being mounted on the board it will not be able to accurately measure the outside environment and it'll likely deal with self-heating from the RPi underneath it.
 
 ## Potential Improvements
 
