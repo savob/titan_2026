@@ -746,6 +746,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSData* sum
             }
         } break;
 
+#ifdef DEBUG // Only actually bother with text messages and printing if debugging
         case MINMEA_SENTENCE_TXT: {
            struct minmea_sentence_txt frame;
            if (minmea_parse_txt(&frame, buffer)) {
@@ -756,6 +757,7 @@ static bool process_gps_string(char buffer[], size_t length, struct GPSData* sum
                 printf("$xxTXT sentence failed to parsed\n");
            }
         } break;
+#endif
 
         case MINMEA_INVALID: // Ignore invalid/unrecognized sentences
         	return false;
