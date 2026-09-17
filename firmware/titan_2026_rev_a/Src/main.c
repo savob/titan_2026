@@ -344,7 +344,10 @@ int main(void)
 
 		summarize_wheel_data(&summary);
 
-		// Check status of GPS input buffer
+		// Check status of GPS input buffer, takes up to 400 us in Release
+#ifdef DEBUG
+		uint32_t start = MICROS_TIMER.Instance->CNT;
+#endif
 		uint_fast16_t current_gps_writing_index = GPS_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(GPS_UART.hdmarx);
 		uint_fast16_t last_gps_written_index = (current_gps_writing_index == 0) ? GPS_BUFFER_SIZE - 1 : current_gps_writing_index - 1;
 		static uint16_t gps_message_start_index = 0;
@@ -368,6 +371,16 @@ int main(void)
 			// Next message will start after newline
 			gps_message_start_index = last_gps_written_index + 1;
 			if (gps_message_start_index >= GPS_BUFFER_SIZE) gps_message_start_index = 0;
+
+#ifdef DEBUG
+			if (summary.gps.valid_position) {
+				uint32_t end = MICROS_TIMER.Instance->CNT;
+				uint32_t delta = end - start;
+				if (end < start) delta = (end + UINT16_MAX) - start; // Handle rollovers
+
+				printf("GPS processing with a lock took about %lu us\n\r", delta);
+			}
+#endif
 		}
 		if (summary.gps.valid_position) {
 			led_set_duty(LED_GPS, UINT16_MAX);
