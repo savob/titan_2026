@@ -24,8 +24,8 @@ print('!!!!!!!!!!!!!!!!!!!!!!!!!\n\nSTARTING UP TITAN SYSTEMS\n\n!!!!!!!!!!!!!!!
 os.system('python ./power_button.py &')
 print('Monitoring RPi power button\n\tTap button to stop TITAN vision system\n\tHold button for a few seconds to safely shutdown the RPi')
 
-# Determine if it is main unit or not based on the presence of the ANT stick
-isFront = False # Assume false
+# Determine if there is an ANT stick connected to the system
+ant_present = False
 ANTStickID = b'0fcf:1008' #ID of ANT stick to check for ("b'" is needed to preceed)
 
 print('Determining if this is front (main) RPi or not based on ANT+ stick (USB ID of {}).'.format(ANTStickID))
@@ -45,18 +45,33 @@ for i in df.split(b'\n'):
             
             # Check for ID match
             if ANTStickID == dinfo['id'] :
-                isFront = True # Set true
+                ant_present = True
+
+is_front = (ant_present == False) # This is kind of redundant but allow us to easily swap which system has the ANT
 
 # Act accordingly
-if isFront == True:
-    print('ANT Stick detected, this is the front (main) RPi!\n')
-    
-    # Run front bike code with ANT piping data in
-    # Bike.bin arguments = front, camera, ANT piped in, serial enabled, logging
-    os.system('python ./titanant.py | ./bike.bin fcasl') 
+if is_front:
+    if ant_present:
+        print('ANT Stick detected, this is the front (main) RPi!\n')
+        
+        # Run front bike code with ANT piping data in
+        # Bike.bin arguments = front, camera, ANT piped in, serial enabled, logging
+        os.system('python ./titanant.py | ./bike.bin fcasl')
+    else:
+        print('No ANT Stick detected, this is the front (primary) RPi!\n')
+        
+        # Bike.bin arguments = front, camera, serial enabled
+        os.system('python ./titanant.py | ./bike.bin fcs') 
 else:
-    print('No ANT Stick detected, this is the rear (secondary) RPi!\n')
-    
-    # Run rear camera system
-    # Bike.bin arguments = rear, camera, serial enabled
-    os.system('./bike.bin rcs')
+    if ant_present:
+        print('ANT Stick detected, this is the rear (secondary) RPi!\n')
+        # Pipe ANT data into overlay code
+        
+        # Bike.bin arguments = rear, camera, ANT piped in, serial enabled, logging
+        os.system('python ./titanant.py | ./bike.bin rcasl')
+    else:
+        print('No ANT Stick detected, this is the rear (secondary) RPi!\n')
+        
+        # Run rear camera system
+        # Bike.bin arguments = rear, camera, serial enabled
+        os.system('./bike.bin rcs')
