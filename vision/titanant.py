@@ -84,36 +84,44 @@ try:
     time.sleep(1)
 
     while (1):
-        time.sleep(0.5)
-
-        front_cur_hr = 0
-        front_cur_cad = 0
-        front_cur_pwr = 0
-        rear_cur_hr = 0
-        rear_cur_cad = 0
-        rear_cur_pwr = 0
-
-        if front_pwr:
-            front_cur_pwr = front_pwr.status["instant_power"]
-            front_cur_cad = front_pwr.status["instant_cadence"]
-        if front_hrm:
-            front_cur_hr = front_hrm.status["calculated_heart_rate"]
-        if rear_pwr:
-            rear_cur_pwr = rear_pwr.status["instant_power"]
-            rear_cur_cad = rear_pwr.status["instant_cadence"]
-        if rear_hrm:
-            rear_cur_hr = rear_hrm.status["calculated_heart_rate"]
-        
-        #Use stdout to pipe data to another process (the display)
-        stdout.write("%03d,%03d,%03d,%03d,%03d,%03d\n" % ( 
-            front_cur_hr, front_cur_cad, front_cur_pwr,
-            rear_cur_hr, rear_cur_cad, rear_cur_pwr))
-        
         try:
-            stdout.flush()
-        except IOError as e:
-            if e.errno == errno.EPIPE:
-                pass # Don't let broken pipes cause issues
+            time.sleep(0.5)
+
+            front_cur_hr = 0
+            front_cur_cad = 0
+            front_cur_pwr = 0
+            rear_cur_hr = 0
+            rear_cur_cad = 0
+            rear_cur_pwr = 0
+
+            if front_pwr:
+                front_cur_pwr = front_pwr.status["instant_power"]
+                front_cur_cad = front_pwr.status["instant_cadence"]
+            if front_hrm:
+                front_cur_hr = front_hrm.status["calculated_heart_rate"]
+            if rear_pwr:
+                rear_cur_pwr = rear_pwr.status["instant_power"]
+                rear_cur_cad = rear_pwr.status["instant_cadence"]
+            if rear_hrm:
+                rear_cur_hr = rear_hrm.status["calculated_heart_rate"]
+            
+            #Use stdout to pipe data to another process (the display)
+            stdout.write("%03d,%03d,%03d,%03d,%03d,%03d\n" % ( 
+                front_cur_hr, front_cur_cad, front_cur_pwr,
+                rear_cur_hr, rear_cur_cad, rear_cur_pwr))
+            
+            try:
+                stdout.flush()
+            except IOError as e:
+                if e.errno == errno.EPIPE:
+                    pass # Don't let broken pipes cause issues
+        except KeyboardInterrupt:
+            print("\n\nEnding ANT Data Collection")
+            stop()
+            print("Terminated ANT Data Collection")
+            print("Exiting")
+        except:
+            pass # Blindly ignore any issues including USB Timeouts
 except KeyboardInterrupt or BrokenPipeError:
     # Broken pipe implies OSD has malfunctioned/closed so also treat as exit
     print("\n\nEnding ANT Data Collection")
