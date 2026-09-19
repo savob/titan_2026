@@ -119,6 +119,8 @@ HAL_StatusTypeDef atmo_conditions_update(struct TitanSummary* target, uint16_t m
 			any_error = true;
 		}
 	}
+	else target->co2_ppm = 0; // Reset CO2 reading if not present
+
 	if (mh_z19_co2_ppm > 0) { // Include MH sensor reading too if valid
 		if (target->co2_ppm <= 0) target->co2_ppm = (uint16_t)mh_z19_co2_ppm;
 		else target->co2_ppm = (target->co2_ppm + (uint16_t)mh_z19_co2_ppm) / 2;
